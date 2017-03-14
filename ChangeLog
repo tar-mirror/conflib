@@ -1,0 +1,387 @@
+1998-08-15  Uwe Ohse  <uwe@ohse.de>
+
+	* configure.in: increase SOVERSION to 6:0:1 from 5:0:0
+	  increase version number to 0.4.5
+	  check for m4.
+
+	* doc/Makefile.am: use @M4@
+
+	* src/cl_assign.c (cl_assign):
+	  + Support für CL_BITFIELD
+	  + Support für "append string/dirvar = value"
+	  + Support für "override list/bitfield = value"
+
+	* src/cl_clearconf.c (cl_clearconf): Support CL_BITFIELD.
+
+	* src/cl_find_var.c (cl_find_confvar): Support für CL_ALIAS
+	  fehlte.
+
+	* src/cl_getstanza.c (env_auswertung): CL_BITFIELD 
+	  ignorieren (keep gcc quiet).
+
+	* src/cl_put_one.c (cl_put_one): Support CL_BITFIELD
+
+	* src/conflib.h: CL_BITFIELD definiert.
+
+1998-08-11  Uwe Ohse  <uwe@ohse.de>
+
+	* src/cl_setvar.c (cl_setvar): Speicher für puffer nun dynamisch alloziert,
+	  wird nicht mehr still und heimlich gekürzt.
+
+	* src/cl_openconf.c (cl_lock_file): "#error 1" entfernt.
+
+Wed Jul 15 20:36:00 1998  uwe  <uwe@fjoras>
+
+    * src/cl_setvar.c (cl_setvar): initializer for dummy.buf was not
+      constant.
+
+    * src/conflib.h (__CL_ATTRIB_UNUSED): define to empty if not defined.
+
+    * acinclude.m4: Neues Makro zum Test ob fcntl-Filelocking ueberhaupt
+	  funktioniert.
+
+	* configure.in: da wird es benutzt.
+
+	* Update auf geekgadgets-libtool-Version.
+
+1998-02-23  Uwe Ohse  <uwe@ohse.de>
+
+
+    * src/cl_openconf.c (cl_openconf): initialize interptab to NULL.
+
+    * src/conflib.h (cl_file_t): new field "interptab", pointer to tip_t
+
+    * src/cl_getstanza.c (zeile_scannen): kann mit '[bla bla bla]' umgehen
+      wie mit 'bla bla bla:'.
+      (cl_zeile_auswerten): dito. ~= auswertung.
+
+1997-11-02  Uwe Ohse  <uwe@ohse.de>
+
+    * src/cl_macro.c (tip_defmacro): 
+      mark two arguments as unused.
+      (tip_undefmacro): same here.
+
+    * src/conflib.h (__CL_ATTRIB_UNUSED): new attribute 
+      __CL_ATTRIB_UNUSED
+
+    * src/cl_getstanza.c (cl_putenv): remove unused variable `s'.
+      (env_auswertung): CL_NUMSHORT was buggy ...
+
+Sun Feb 23 12:06:32 MET 1997 Uwe Ohse <uwe@tirka.gun.de>
+
+	* Release 0.4.3
+
+	* src/cl_strtol.c:
+	* src/cl_strtol.h: new files. Allows suffixes for numerical variables 
+	  (b==blocks==512 Bytes, c==char==1Byte, B/k==Blocks/kilobytes==1024
+	  Bytes, m==megabyte==1MB, w==word==2Bytes).
+
+	* src/cl_assign.c: use cl_strtol, not atoi/atol.
+	* src/cl_getstanza: dito.
+
+	* updated to automake-1.1l
+
+	* use libtool-0.9
+
+	* changed some test outputs in tests/
+
+Tue Sep 24 09:06:07 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+	* src/cl_getstanza.c (env_auswertung): allocate buffer for directory
+	  name (unconstant PATH_MAX).
+	  (global): try to get PATH_MAX.
+
+	* src/cl_putstanza.c: try to get PATH_MAX.
+	  (cl_putstanza): dynamically allocate buffer for backup filename
+	  (PATH_MAX doesn't need to be constant).
+
+	* src/cl_assign.c (cl_assign): buffer for directory name is not
+	  dynamically allocated.
+
+Wed Sep 11 22:30:44 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+	* configure.in: check for strerror.
+
+Thu Aug 29 09:52:39 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* src/cl_unalias.c (cl_unalias): added documentation.
+
+		* src/cl_getstanza.c (cl_zeile_auswerten): include/includestanza
+		  statements übergaben stanza/dateinamen in später überschriebenem
+		  Puffer an cl_get*stanza.
+		  (cl_getstanza): Nach Fortsetzungszeilen stimmte die Zeilennummer
+		  nicht.
+
+		* configure.in (VERSION): change to 0.4.3
+
+		* doc/Makefile.am (conflib_TEXINFOS): include cl_setvar.texi
+
+		* doc/conflib.texi (misc functions): include cl_setvar.texi
+
+		* src/Makefile.am (conf_SOURCES): include cl_setvar.c
+
+		* src/cl_setvar.c (cl_setvar): new file, new function.
+
+		* src/cl_getstanza.c (cl_zeile_auswerten): 
+
+		* src/intern.h: prototype cl_zeile_auswerten.
+
+		* src/cl_getstanza.c (cl_putenv): new function. 
+		  does text interpretation on $X=xxx lines.
+		  rename zeile_auswerten to cl_zeile_auswerten, remove static.
+
+Wed Jul 31 13:36:06 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* tests/t_stanzas.c: include errno.h
+
+		* src/cl_getstanza.c: include errno.h
+
+Sun Jul 28 12:04:09 1996  Uwe Ohse  <uwe@tirka.gun.de>
+		
+		* Release 0.4.2
+		
+		* configure.in (PACKAGE_VERSION): Versionnummer auf 0.4.2 
+		  erhoeht.
+
+		* Makefile.am (cvs-dist): new target.
+
+		* src/cl_lib.c (cl_fnmatch_casefold): don't use wildmat anymore.
+		  (well, at least not direct)
+
+		* src/wildmat.c (DoMatch): ANSI-C-Funktionskopf.
+		(wildmat): dito. also static to avoid namespace pollution.
+
+		* src/intern.h: __P() entfernt - the world talks ANSI C.
+
+Tue Jun 18 11:00:30 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* src/cl_getvers.c (cl_getversion): patchlevel wurde immer als
+		  0 gerechnet.
+
+Sun Jun  9 17:02:31 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* splitted into several directories
+
+		* "make check" target added.
+
+		* changed to automake
+
+		* updated documentation, using english language.
+		  (not complete, text interpretations is missing,
+		   warning/error-hook too).
+
+		* cl_getstanza.c: Zeilennummer stimmt bei gescannten Configfiles
+		  nicht mehr.
+
+		* cl_lib.c (cl_convert2bool): 0 wurde als true
+		  interpretiert.
+
+Fri Jun  7 20:20:34 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* cl_assign.c (cl_assign): falls regcomp nicht verfügbar ist
+		  wird auf den Bereichscheck mit regulären Ausdrücken
+		  verzichtet.
+
+		* cl_getstanza.c (zeile_auswerten): falls putenv nicht
+		  verfügbar ist wird setenv/unsetenv verwendet.
+
+		* cl_in_warray.c: 
+		* cl_assign.c (cl_assign): es wird nun cl_fnmatch statt
+		  fnmatch benutzt.
+
+		* cl_alist.c (cl_build_stanza_array): es wird nun
+		  cl_fnmatch_casefold statt fnmatch benutzt.
+
+		* cl_getstanza.c (cl_getstanza): RCS-Bereich entfernt.
+		  include von fnmatch.h entfernt. cl_fnmatch_casefold
+		  wird benutzt.
+
+		* cl_closeconf.c: 
+		* cl_openconf.c: 
+		* cl_gcstanza.c: 
+		* cl_getconf.c: RCS-Kram entfernt, nahm überhand.
+
+		* cl_tinterp.c (tip_dollar): 
+		* cl_getvers.c (cl_getversion): auf neue Versionsnummerrierung
+		  umgeschrieben.
+
+		* Readme nach README umbenannt.
+		
+		* install.sh nach install-sh umbenannt.
+		
+		* NEWS, AUTHORS, INSTALL, stamp-h.in, mkinstalldirs: neu
+		
+		* version.h: entfernt. Versionsnummer steht von nun an
+		  in configure.in und config.h
+
+		* configure.in: heftig umgemodelt.
+		
+		* strdup.c, strtol.c, strcasecmp.c, strncasecmp.c: 
+		  umgearbeitet. Enthalten nun nicht mehr die gleichnamigen
+		  Funktionen, sondern z.B. "cl_strdup".
+		
+		* ownstd.h: Verfahren für fehlende strdup/strtol/str*casecmp
+		  geändert. wenn nicht vorhanden #define fn cl_fn ...
+
+		* cl_putstanza.c: strerror-Aufrufe zugunsten von errnum-Parameter
+		  für cl_warning entfernt - damit kommt die Lib auch ohne
+		  strerror klar.
+
+		* conflib.h: Prototypen für cl_warning_hook und cl_error_hook
+		  um int-Parameter für errno erweitert.
+		
+		* cl_warning.c: enthält private strerror-Funktion.
+		  heftig überarbeitet, cl_warning erhält nun einen neuen
+		  Parameter, für errno.
+
+Fri May 10 11:04:43 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* Makefile.in: lint-Targets/Variablen hinzugefügt.
+
+		* cl_putstanza.c: einige xlint-Warnungen abgestellt.
+
+Wed May  8 09:02:19 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* cl_tinterp.c (tip_conditional): unnötige Variablenzuweisung
+		  gelöscht.
+		  Allgemein: Ein paar lint-Steuerkommentare eingefügt.
+
+		* conflib.h: trailing ',' prohibited in enum declaration
+
+Sun Feb 25 13:26:28 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+		* cl_getstanza.c (zeile_auswerten): ein paar strdup durch malloc
+		  und memcpy ersetzt. 
+
+Mon Jan 29 22:37:18 1996  Uwe Ohse  <uwe@tirka.gun.de>
+	* configure.in: prüft auf Existenz von regex.h und regcomp/regexec.
+	  Benutzt sonst rx.c und rx.h.
+	
+	* Makefile.in: rx.c und rx.h in dist aufgenommen.  Zu bei make
+	  *clean zu löschenden Files in $(*CLEAN_FILES) geschrieben.
+	 
+	* libtest.c: prüfte nicht auf \r\n ab, sondern nur auf \n als
+	  Zeilenende.
+
+	* rx.c, rx.h: aus libquark herüberheholt, leicht modifiziert (beide)
+	  rx.c included regex.h statt rx.h, rx.h hatte einen falschen
+	  #if XX || YY anstelle von #if defined(XX) || defined(YY)
+
+	* cl_openconf: wenn kein Filelocking möglich ist weil F_??LCK
+	  nicht definiert sind locken wir eben nicht. 
+	 
+Sun Jan 28 22:37:18 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+	* cl_putstanza.c: fehlendes #include errno.h nachgetragen.
+
+	* Makefile.in: ersatzsources und ersatzheaders durch $(srcdir)
+	  qualifiziert (make distclean nach einem make dist stolperte
+	  darüber).
+
+Fri Jan 26 12:14:03 1996  Uwe Ohse  <uwe@tirka.gun.de>
+
+	* cl_alist.c: dokumentiert.
+	  cl_delete_stanza_array setzt nun auch *array auf NULL.
+
+28.5.1995:
+- Makefile und configure.in überarbeitet.
+8.5.1994:
+- durch Electric Fence gschickt: keine Probleme. neues Ziel im Makefile: fence
+- einige neue Interpretationsfunktionen:
+  - size_t tip_defmacro(tip_t *, const char *, const char **, char *, size_t);
+    (Makro definieren)
+  - size_t tip_literal(tip_t *, const char *, const char **, char *, size_t);
+    (Expansion der Argumente verhindern)
+  - size_t tip_force(tip_t *, const char *, const char **, char *, size_t);
+    (doppelte Expansion erzwingen)
+- die alte Funktion tip_defmacro heißt nun tip_defmacro_intern
+- neue Funktion char * tip_ainterpret(tip_t *tab, const char *format):
+  Alloziert selbst einen hoffentlich ausreichenden Speicherbereich.
+- Dokumentation der Interpretationsroutinen auf den neuesten Stand 
+  gebracht.
+7.5.1995:
+- CL_STATEMENT eingebaut: Das Flag gibt an, daß "var value" für diese
+  variable benutzt werden soll statt "var=value".
+- CL_FUNCTION eingebaut: Zuweisungen, Ausgaben und Cleanup werden 
+  über selbstdefinierte Versionen abgewickelt.
+- Versionsnummer auf 0.3.0 zurückgesetzt. Eigene Versionsnummer für
+  shared Librarys (nun 1.1). Kein Problem zu erwarten.
+- Anpassung auf RCS.
+April 1995:
+- Versionsnummer auf 1 gesetzt (nur um eine andere Major-Version-Number
+  zu bekommen).
+20.12.1994:
+- Alle Nullpointerausgaben in putconf.c durch NULLSTR-Makro ersetzt.
+18.12.1994:
+- neues Ziel libconf.so.`version` im Makefile (elf-support, minor form)
+11.12.94:
+- CL_DIRNAME: Wie CL_STRING, wird aber immer mit / abgeschlossen.
+  (getconf.c putconf.c cllib.c assign.c libtest.c)
+- getconf.c hat Nullpointer dereferenziert, wenn eine Zeile nicht
+  mit CR oder LF abgeschlossen war.
+25.11.94:
+- Version 0.2.6
+- Autoconf 2.1
+- Dokumentation vervollständigt.
+- Makefile aufgeräumt, fnmatch.[ch], strtol.c besorgt.
+Oktober 94:
+- $[bedingung?what-if-true:what-if-false] in tinterp.c
+30.9.94:
+- Version 0.2.5
+- größere interne Reorganisation
+- Kommando include zum Einlesen einer Stanza aus einer anderen Datei
+  oder einer ganzen Konfigdatei (keine Stanza angeben):
+  	include include.cnf teststanza
+29.9.94:
+- Kommando includestanza zum Einlesen einer Stanza als Teil der gerade
+  gelesen werdenden:
+  	includestanza hallo
+- neuer Typ CL_CHAR
+5.7.94:
+- Version 0.2.4
+- Configdateien können bei cl_getconfstanza offengehalten werden (neuer
+  Parameter am Ende).
+- "end" nicht mehr nötig.
+23.5.94:
+- Version 0.2.3
+- $# wird als Zeilennummer interpretiert.
+- Textinterpretationsroutine ausgelagert bzw. teilweise neugeschrieben. Damit
+  neue Dateien tinter.[ch]. Gleichzeitig erweitert und Backslash-Escapes
+  auf C-Standard angepasst.
+27.4.94:
+- Version 0.2.2
+- CL_LIST für Listen mit programmierbaren Separatoren.
+- CL_DUMMY zum Ignorieren von Zuweisungen.
+- cl_report_all meldet Dummys, Aliasse und GetKonf*ReportUnknown 
+- GetKonfReportUnknown nun Default, ausserdem GetKonfDontReportUnknown
+  zum abschalten der Warnungen.
+26.4.94:
+- Zeilenende kann nun mit Backslash entwertet werden (getconf.c).
+- CL_ALIAS eingebaut.
+irgendwann dazwischen:
+- cl_getversion liefert die Versionsnummer der Conflib zurueck.
+28.2.94:
+- Enumerationen eingebaut (getconf.c putconf.c libtest.c)
+27.1.94:
+- Version 0.2.0?
+- free() auf falschen Bereich.
+26.1.94
+- Doku -> Texinfo.
+- autoconf
+24.1.94:
+- germlish beseitigt (gemischte deutsch/englische Schreibweise). Diverse
+  Bezeichner geändert. 
+2.1.94:
+- KT_NUMSHORT erhielt Zuweisungen von mit (int *) gecasteten Werten,
+  was unter Solaris SIGSEGV produzierte (ich vermute, das war auch für
+  die Probleme auf dem Atari verantwortlich, die auftragen, wenn man die
+  Konflib mit gcc -mshort übersetzte).
+- Zum Ausgleich wurde KT_BOOLEAN auf (short *) gecastete Werte zugewiesen.
+  Da habe ich die beiden wohl verwechselt ...
+  KT_BOOLEAN ist aber als int deklatiert (short wäre intelligenter 
+  gewesen, aber was soll's?).
+  Dieser Bug hatte wohl nur deshalb keine Auswirkungen, weil zufällig die
+  int's zumindest bei mir immer mit 0 == False initialisiert waren.
+- Außerdem wurden Fehlermeldungen ausgegeben, die überhaupt nicht aus-
+  gegeben werden sollten.
+- doku bezüglich GetKonfReportUnknown erweitert.

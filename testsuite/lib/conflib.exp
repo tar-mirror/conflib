@@ -1,0 +1,62 @@
+proc check_interp { name toi vgl } {
+	global objdir
+	catch "exec $objdir/conflibtest -i \$toi" dummy
+	if {0==[string compare $dummy $vgl]} {
+		pass $name
+	} else {
+		puts "$name >$toi< >$vgl< >>$dummy<<"
+		fail $name
+	}
+}
+
+proc check_conflib { name cnf stanza vgl } {
+	global objdir
+	set vglfile "$name.output"
+	catch "exec $objdir/conflibtest -c $cnf -s $stanza -d >$vglfile" dummy1
+	catch "exec cmp $vgl $vglfile" dummy
+	if {0==[string compare $dummy ""]} {
+		pass $name
+		catch "exec rm -f $vglfile"
+	} else {
+		puts "$name:"
+		catch "exec diff -u $vgl $vglfile" dummy
+		puts $dummy
+		puts $dummy1
+		puts "$objdir/conflibtest -c $cnf -s $stanza -d >$vglfile" 
+		fail $name
+	}
+}
+
+proc check_conflib2 { name cnf stanza opt vgl } {
+	global objdir
+	set vglfile "$name.output"
+	catch "exec $objdir/conflibtest -c $cnf -s $stanza -d $opt >$vglfile" dummy
+	catch "exec cmp $vgl $vglfile" dummy
+	if {0==[string compare $dummy ""]} {
+		pass $name
+		catch "exec rm -f $vglfile"
+	} else {
+		puts "$name:"
+		catch "exec diff -u $vgl $vglfile" dummy
+		puts $dummy
+		fail $name
+	}
+}
+
+proc check_conflib_var { name cnf stanza opt var vgl } {
+	global objdir
+	catch "exec echo \"$cnf\" >tmp.cnf" dummy
+	if {0!=[string compare $stanza ""]} {
+		set stanza "-s $stanza"
+	} else {
+		set stanza "-s \"\""
+	}
+	catch "exec $objdir/conflibtest -c tmp.cnf $stanza $opt -v $var" dummy
+	if {[string match "$vgl" "$dummy"]} {
+		pass $name
+	} else {
+		verbose -log "$name: expected '$vgl'"
+		verbose -log "$name: got '$dummy'"
+		fail $name
+	}
+}

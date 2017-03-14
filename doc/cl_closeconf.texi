@@ -1,0 +1,7 @@
+@deftypefn {Function} {void} cl_openconf (cl_file_t *@var{hadle})
+
+Closes the configurations file with the handle @var{handle}
+and frees all resources of @var{handle} (this means that 
+you really should not access @var{handle} and its data 
+any longer).
+@end deftypefn

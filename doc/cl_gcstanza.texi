@@ -1,0 +1,8 @@
+@deftypefn {Function} {int} cl_getconfstanza (const char *@var{fname}, cl_var_t *@var{conftab}, const char *stanza)
+
+cl_getconfstanza reads the stanza @var{stanza} from the configuration
+file @var{fname} into @var{conftab}. If @var{stanza} is @code{NULL} then 
+the whole configuration file is read.
+
+Returns 0 if successful and other values if not.
+@end deftypefn

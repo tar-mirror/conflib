@@ -1,0 +1,12 @@
+@deftypefn {Function} {cl_var_t *} cl_unalias (cl_file_f *@var{file}, cl_var_t *@var{tab}, cl_var_t *@var{entry})
+
+This function follows an alias chain until it finds an entry in @var{tab}
+which is not an alias, and returns it's address.
+
+@var{FILE} is needed for error messages.
+
+@var{ENTRY} is the initial variable. If it is not an alias this function
+returns @var{ENTRY}.
+
+cl_unalias returns @code{NULL} in case of any error.
+@end deftypefn

@@ -1,0 +1,6 @@
+@deftypefn {Function} {void} cl_writeconf (FILE *@var{file},const cl_var_t *@var{tab})
+
+This function may be used to dump a programs configuration
+to file @var{file}. It should not be used to overwrite
+a configuration file.
+@end deftypefn

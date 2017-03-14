@@ -1,0 +1,6 @@
+@deftypefn {Function} {void} cl_free_unknowns cl_ulist_t *@var{list}
+
+cl_free_unknowns frees all memory allocated to the list @var{list},
+which should be a list of unknown variables created from 
+@code{cl_getstanza}. @xref{reading and writing,cl_getstanza}.
+@end deftypefn

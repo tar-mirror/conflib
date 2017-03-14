@@ -1,0 +1,77 @@
+This is Info file conflib.info, produced by Makeinfo version 1.68 from
+the input file conflib.texi.
+
+START-INFO-DIR-ENTRY
+* Conflib: (conflib.info).         Configuration File Handling
+END-INFO-DIR-ENTRY
+
+   This file documents `conflib', a runtime configuration library for
+programs written in C.
+
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998 by Uwe Ohse
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by Uwe Ohse.
+
+
+Indirect:
+conflib.info-1: 1018
+conflib.info-2: 50708
+
+Tag Table:
+(Indirect)
+Node: Top1018
+Node: Copying1512
+Node: overview28366
+Node: configuration files28929
+Node: lines29551
+Node: stanzas30266
+Node: comments31880
+Node: variables33002
+Node: includes34531
+Node: special constructs35113
+Node: programming36848
+Node: simple example38187
+Node: configfile handle39538
+Node: variable definition40788
+Node: enumerations44959
+Node: alias46168
+Node: lists46850
+Node: bitfields48172
+Node: configuration table49352
+Node: easy reading50708
+Node: open and close51465
+Node: reading and writing52534
+Node: analyzing55027
+Node: searching56151
+Node: cleaning up57314
+Node: misc functions58047
+Node: unknown variables59598
+Node: limits61578
+Node: Ersetzung62515
+Node: $-Ersetzung62961
+Node: C-Escapesequenzen63575
+Node: ~-Ersetzung65132
+Node: Bedingungen65996
+Node: Einbindung67148
+Node: tip_interpret68397
+Node: tip_fn_t70527
+Node: Standardroutinen71914
+Node: Makros75379
+Node: tip_init76827
+Node: tip_beispiel77400
+Node: todo78754
+Node: Index79559
+
+End Tag Table

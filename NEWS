@@ -1,0 +1,39 @@
+New in version 0.4.5:
+
+* a new type, bitfield, is supported.
+
+* Stanzanames in brackets also work ([stanza]).
+
+* "var ~= value" to force the interpretation of that value
+  (cl_getstanza and friends, not cl_assign oder cl_setvar).
+
+* "append var = string-to-append" now supported, for strings
+  and directory names.
+
+* "override var = new-value" now supported, for bitfields and lists
+  (otherwise the new value would be "or"ed or appended to the old 
+  value).
+
+* compiles on BeOS.
+
+(0.4.4 left out)
+
+New in version 0.4.3:
+
+* new function cl_setvar. Treats a string as if it was a line in a
+  configuration file.
+
+* $var=xxx assignments in a configuration file are now sent through
+  text interpretation ($PATH=/usr/local/bin:$PATH). Doesn't do ~
+  interpretation (pwd.h interface is broken, IMNSHO).
+
+* a shared library can be build.
+
+* numerical values with suffixes are recognized (especially k
+  == kilo/1024 and m == mega/1024^2).
+
+* minor bugfixes.
+
+NEW in version 0.4.2: 
+
+* minor bug fixes and portability enhancements.

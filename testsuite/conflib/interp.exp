@@ -1,0 +1,65 @@
+# 
+# $-Expansionen
+#
+check_interp tip_dollar1 "\$LOGNAME" [getenv LOGNAME]
+check_interp tip_dollar2 "\$(LOGNAME)" [getenv LOGNAME]
+check_interp tip_dollar3 "\$\$" \$
+check_interp tip_dollar4 "\$()" ""
+
+#
+#
+# Backslash
+check_interp tip_backslash1 "\\0x40" "@"
+check_interp tip_backslash2 "\\0100" "@"
+check_interp tip_backslash3 "\\64" "@"
+check_interp tip_backslash4 "\\\$" \$
+check_interp tip_backslash5 "\\n" "\n"
+check_interp tip_backslash6 "\\N" "N"
+
+# Basisfunktionen
+setenv XXX "   YYY   "
+check_interp tip_strip "\${strip \$XXX}" YYY
+check_interp tip_literal "\${literal \$LOGNAME}" \$LOGNAME
+check_interp tip_force "\${force \\\$LOGNAME}" [getenv LOGNAME]
+
+
+#
+# ~-Expansionen
+#
+check_interp tip_tilde "~" [getenv HOME]
+# next test does nothing useful - it passes, that's all.
+check_interp tip_tilde2 "~\$LOGNAME" [getenv HOME][getenv LOGNAME]
+# ~me!
+check_interp tip_tilde3 "\${force \\~\$LOGNAME}" [getenv HOME]
+catch "exec sh -c \"echo ~root\"" dummy
+check_interp tip_tilde4 "~root" $dummy
+check_interp tip_tilde5 "~root/test" "$dummy/test"
+check_interp tip_tilde6 "~/test" [getenv HOME]/test
+check_interp tip_tilde7 "~(root)" $dummy
+check_interp tip_tilde8 "~()" [getenv HOME]()
+
+#
+# Conditionals
+#
+if {[string compare [getenv CLTESTVAR] ""] != 0} {
+	unsetenv CLTESTVAR
+}
+check_interp tip_cond1 "\$\[\$CLTESTVAR?SET:NOTSET\]" NOTSET
+# spaces are critical
+check_interp tip_cond2 "\$\[\$CLTESTVAR ?SET:NOTSET\]" SET
+check_interp tip_cond3 "\$\[\$CLTESTVAR==?EQUAL:NOTEQUAL\]" EQUAL
+check_interp tip_cond4 "\$\[\$CLTESTVAR!=?NOTEQUAL:EQUAL\]" EQUAL
+check_interp tip_cond5 "\$\[\$CLTESTVAR==X?EQUAL:NOTEQUAL\]" NOTEQUAL
+check_interp tip_cond6 "\$\[\$CLTESTVAR!=X?NOTEQUAL:EQUAL\]" NOTEQUAL
+setenv CLTESTVAR X
+check_interp tip_cond6 "\$\[\$CLTESTVAR==X?EQUAL:NOTEQUAL\]" EQUAL
+check_interp tip_cond7 "\$\[\$CLTESTVAR!=Y?EQUAL:NOTEQUAL\]" EQUAL
+check_interp tip_cond8 "\$\[\$CLTESTVAR!=X?EQUAL:NOTEQUAL\]" NOTEQUAL
+check_interp tip_cond9 "\$\[\$CLTESTVAR!=X?EQUAL\]" ""
+check_interp tip_cond10 "\$\[\$CLTESTVAR==X?EQUAL\]" "EQUAL"
+
+#
+# komplexe Checks.
+#
+check_interp tip_comp1 "X\\40\$\[\$CLTESTVAR==X?EQUAL\]\\\$\$\$" "X(EQUAL\$\$"
+check_interp tip_comp2 "\$LOGNAME$\[\$HOME==~?EQUAL\]justso" [getenv LOGNAME]EQUALjustso

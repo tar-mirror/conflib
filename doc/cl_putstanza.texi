@@ -1,0 +1,30 @@
+@deftypefn {Function} {int} cl_file_t (cl_file_t *@var{handle}, cl_var_t *@var{tab}, const char *@var{stanza}, 
+	long @var{flags}, cl_ulist_t *@var{unknowns})
+
+@code{cl_putstanza} writes @var{tab} to the configuration file 
+@var{handle} into the stanza @var{stanza}. It tries hard to
+do the right thing (especially it preserves any variables found
+in the it doesn't know about).
+
+But there a things @code{cl_putstanza} can or will not handle:
+
+@itemize @bullet
+@item @code{include}- and @code{includestanza}-statements are
+ignored (it would be hard to do that right, and i don't see a really
+good reason for it).
+@item Variables in @var{tab} without the @code{CL_MAY_SAVE} flag
+set will not be saved (this means: if you want to save all variables
+all variables need that flag). If the variable is already found
+in the stanza @var{stanza} it will be preserved (this means: it's 
+not enough to leave out the @code{CL_MA_SAVE} flag to delete a 
+variable. In fact it's impossible to delete a variable at this
+time).
+@end itemize
+
+All variables in @var{unknowns} will be saved. 
+
+To state it clearly: At the moment there is no way to remove a
+variable from the configuration file.
+
+Returns 0 if successful, other values is unsuccessful.
+@end deftypefn

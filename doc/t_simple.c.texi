@@ -1,0 +1,40 @@
+#include "ownstd.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <ctype.h>
+#include <time.h>
+
+#ifdef HAVE_UNISTD_H
+#  include <unistd.h>
+#endif
+
+#include "conflib.h"
+#include "tinterp.h"
+
+char *action;
+char *tmpdir;
+
+cl_var_t tab[] =
+@{
+  @{ "action",    NULL,       CL_STRING,  &action     ,0          ,NULL @},
+  @{ "tmpdir",    "TMP",      CL_DIRNAME, &tmpdir     ,CL_PREENV  ,NULL @},
+  @{ NULL,NULL,0,NULL,0 @}
+@};
+
+int main(void)
+@{
+  int result;
+
+  result = cl_getconf("simple.cnf",tab);
+  if (result != 0)
+  @{
+    fprintf(stderr,"cannot read simple.cnf");
+    exit(1);
+  @}
+
+  printf("tmpdir=%s\n",tmpdir ? tmpdir : "not set");
+  printf("action=%s\n",action ? action : "none");
+  exit 0;
+@}
+

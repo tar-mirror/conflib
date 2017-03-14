@@ -1,0 +1,9 @@
+@deftypefn {Function} {int} cl_isinwarray (const char **Array, const char *St)
+
+cl_isinarray searches the elements of array @var{Array} for
+a string matching @var{st}. This function uses wildcard 
+comparision (with @var{st} being the pattern) and 
+works casesensitive).
+
+The function returns 0 if @var{st} found and one otherwise.
+@end deftypefn

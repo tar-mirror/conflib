@@ -1,0 +1,1034 @@
+\input texinfo    @c -*-texinfo-*-
+@comment %**start of header
+@set version 0.4.5
+@set update-date 15 August 1998
+@set update-month August 1998
+
+@setfilename conflib.info
+@settitle The Conflib Manual @value{version}
+@setchapternewpage odd
+@smallbook
+@comment %**end of header
+
+@synindex fn cp
+@synindex tp cp
+@ifinfo
+@format
+START-INFO-DIR-ENTRY
+* Conflib: (conflib.info).         Configuration File Handling
+END-INFO-DIR-ENTRY
+@end format
+@end ifinfo
+
+@c Set smallbook if printing in smallbook format so the example of the
+@c smallbook font is actually written using smallbook; in bigbook, a kludge
+@c is used for TeX output.
+@c set smallbook
+@clear smallbook
+
+@ifinfo
+This file documents @code{conflib}, a runtime configuration library for
+programs written in C.
+
+Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998 by Uwe Ohse
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+@ignore
+Permission is granted to process this file through TeX and print the
+results, provided the printed document carries copying permission
+notice identical to this one except for the removal of this paragraph
+(this paragraph not being relevant to the printed manual).
+
+@end ignore
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by Uwe Ohse.
+@end ifinfo
+
+@c setchapternewpage odd
+@titlepage
+@title Conflib
+@subtitle Configuration File Handling Library
+@subtitle Version @value{version}
+@subtitle @value{updatemonth}
+
+@author Uwe Ohse
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1994 Uwe Ohse.
+
+Permission is granted to make and distribute verbatim copies of
+this manual provided the copyright notice and this permission notice
+are preserved on all copies.
+
+Permission is granted to copy and distribute modified versions of this
+manual under the conditions for verbatim copying, provided that the entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
+
+Permission is granted to copy and distribute translations of this manual
+into another language, under the above conditions for modified versions,
+except that this permission notice may be stated in a translation approved
+by Uwe Ohse.
+
+@end titlepage
+
+@ifinfo
+@node Top, Copying, (dir), (dir)
+@top
+@unnumbered Hauptmenue
+This is the manual for Conflib, @value{version}.
+
+@end ifinfo
+
+@menu
+* Copying::               Copyright
+* overview::              blurb ...
+* configuration files::   configuration file format
+* programming::           programming with the library
+* Ersetzung::             Textersetzungsroutinen (still german)
+* todo::                  what's left
+* Index::                 concept index
+@end menu
+
+
+@node    Copying,overview,Top ,Top
+@include lgpl.texi
+
+@node    overview,configuration files,Copying ,Top
+@comment node-name, next,  previous,    up
+@cindex Overview
+@cindex blurb
+@unnumbered Overview
+The library allows flexible runtime configuration. It's both
+simple and powerful, and it's still reasonable simple if you
+choose to use the power. It has support for many simple and
+not so simple data types, including enumerations, arrays and
+lists.
+
+There are functions to read and write configuration files.
+It should be possible to write a configuration file editor
+(hey, there is @code{vi} already - why another editor? Don't
+waste your time).
+
+@node    configuration files,programming,overview,Top
+@comment node-name, next,  previous,    up
+@cindex  configuration files
+@chapter Configuration Files
+Configuration files consist of one or more blocks, called @code{stanza}
+(i believe this comes from @code{AIX}), in which values are assigned
+to variables.
+
+@menu
+* lines::                 how lines are treated
+* stanzas::               blocks in configuration files
+* comments::              line- and block comments
+* variables::             variable types
+* includes::              including other configuration files
+* special constructs::    append, override, forcing interpretation
+@end menu
+
+@node    lines,stanzas,configuration files,configuration files
+@comment node-name, next,  previous,    up
+@cindex  lines
+@section Lines In The Configuration File
+At the moment lines may be up to 1024 characters long. Long lines
+may be splitted, but the 1024 character limit stays (splitted lines
+count as one line).
+
+To mark a line as splitted escape the last character with a
+backslash (@code{\}).
+
+@smallexample
+# This is a  \
+  comment line 
+var=a long \
+value
+@end smallexample
+
+is equal to:
+
+@smallexample
+# This is a     comment line
+var=a long value
+@end smallexample
+
+Whitespace is preserved except at the begin and the and of the
+line after glueing together the splittet lines.
+The backslash and the lineend simply vanish.
+
+@node    stanzas,comments,lines,configuration files
+@comment node-name, next,  previous,    up
+@cindex block
+@cindex stanza
+@cindex stanza names
+@section Stanzas in configuration files
+Each stanza consist of a label line and zero to many variable assignments
+(this basically means: a stanza may be totally empty).
+
+The label line ends with a colon and has no equals sign (@code{=}) in it.
+Before the colon are one or more words (separated with white space). Each
+one is a name for this stanza. Alternatively you may include the label 
+in brackets (@key{[} and @key{]}), but then you must use only one stanza
+name on that line (this is not a serious problem).
+
+Names may be found in different label lines (i.e. in different stanzas).
+Each stanza with this name will be read if the stanza is read, making
+it possible to share assignments between many stanzas (but there are
+better ways, see @ref{includes}).
+
+A stanza ends with the next stanza, or the end of the file.
+
+An example:
+
+@smallexample
+stanza1:
+    variable1="hallo"
+[stanza2]
+    variable2="hallo Du"
+stanza1 stanza3:
+    variable3="Hallo Du da"
+@end smallexample
+
+If the stanza @code{stanza1} is read then @code{variable1} and
+@code{variable3} are set to the new values. If @code{stanza3} is
+read then only @code{variable3} it set.
+
+It is possible to read all stanzas matching a certain wildcard. To do
+this one gives a wildcard pattern instead of a stanza name to 
+@code{cl_getstanza}. This is called a @code{wildcard read}. For 
+more details see @ref{reading and writing, cl_getstanza}. 
+
+In the following example all stanzas will be read if @code{*ab*} is 
+used as a pattern:
+
+@smallexample
+aber:
+ab:
+hinab:
+@end smallexample
+
+@node    comments,variables,stanzas,configuration files
+@comment node-name, next,  previous,    up
+@cindex  comments
+@section Comments in Configuration Files
+Two kinds of comments are recognized. This first is a one-line-comment,
+on a line beginning with a @code{#} (whitespace before this will
+be ignored). A comment line is ignored. The following are legal 
+comments:
+
+@smallexample
+# comment
+#        comment
+        #comment
+@end smallexample
+
+but the following are not recognized as comments:
+
+@smallexample
+var=value # assign a new value
+label: # a new stanza begins
+@end smallexample
+
+The second line is completely ignored, the first one assigns
+@code{value # assign a new value} to var. 
+
+The second kind of comments are block comments. They begin with a 
+line beginning with @code{##} (again, whitespace before this will be 
+ignored), and end with the next such line. Example
+
+@smallexample
+# the next line begins a block comment
+## block comment starts here
+....
+## block comments end here
+@end smallexample
+
+The following is no good style, but possible:
+
+@smallexample
+label1:
+    var1=value
+# label2 is not needed anymore \
+label2:
+    var2=value
+@end smallexample
+
+@node    variables,includes,comments,configuration files
+@comment node-name, next,  previous,    up
+@section Variables in Configuration Files
+@cindex  Variables
+Variables get there values through assignment in the configuration
+files. An assignment looks like this:
+
+@smallexample
+variable_name=value
+@end smallexample
+
+Whitespace bevor the equals sign are ignored, whitespace after 
+is is ignored. Whitespace at the end of the line is ignored.
+
+Variable names are caseinsensitive. No difference between minus
+sign and underscore is made, they are treated as equal.
+
+There are many different variable types:
+
+@table @var
+@cindex boolean variables
+@item boolean
+Boolean variables get a @code{true} value assigned if the string
+begins with one of @code{tTyYjJwW]} and a @code{false} value if the
+string starts with one of @code{fFnN}. If none of these character
+matches the string is treated as number, and @code{true} is assigned
+if the number is not zero.
+
+The following assignment are @code{true}:
+
+@itemize @bullet
+@item var=true
+@item var=wahr
+@item var=99
+@item var=-1
+@end itemize
+
+and these are false:
+
+@itemize @bullet
+@item var=false
+@item var=nein
+@item var=0
+@item var=x
+@end itemize
+
+@item short
+a short number. The typical values range from -32768 to 32767.
+
+@item number
+a long number. The typical value range is @{+|-@}2^32.
+
+@item string
+a string.
+
+@item string array
+a array of strings. Each assignment to the variable fills another
+element in the string array. The maximal number of strings in one
+array is limited, see @ref{limits}.
+
+@item enumerations
+
+@item characters
+
+@item directory names
+@end table
+
+@node    includes,special constructs,variables,configuration files
+@comment node-name, next,  previous,    up
+@cindex  includes
+@section Including Stanzas And Files
+
+@cindex includestanza
+@deffn Command includestanza stanzaname
+Includes the stanza @var{stanzaname} as part of the stanza read at the
+time the @code{includestanza} statement is found.
+@end deffn
+
+@deffn Command include filename [stanzaname]
+Includes the stanza @var{stanzaname} from the configuration files
+@var{filename}. If @var{stanzaname} is left out the whole 
+configuration file is read (you can achieve the same with
+writing @code{include @var{filename} *}.
+@end deffn
+
+@node    special constructs,,includes,configuration files
+@comment node-name, next,  previous,    up
+@cindex  includes
+@section Special constructs in the configuration file
+
+@table @code
+@item var ~= value
+forces interpretation of @var{value}. This is controlled by an array
+of tip_t either attached to the configuration file handle or statically
+compiled into the library. The one included in the library contains:
+@smallexample
+static tip_t cl_tiptab[]=@{
+    @{ '\0', "$@{literal",   0, tip_literal @},
+    @{ '\\', NULL,        0, tip_backslash @},
+    @{ '~',  NULL,        0, tip_tilde @},
+    @{ '\0', "$[",        0, tip_conditional @},
+    @{ '\0', "$@{strip",   0, tip_strip @},
+    @{ '\0', "$@{force",   0, tip_force @},
+    @{ '\0', "$@{macro",   0, tip_macro @},
+    @{ '\0', "$@{defmacro",   0, tip_defmacro @},
+    @{ '\0', "$@{undefmacro",   0, tip_undefmacro @},
+    @{ '$',  NULL,        0, tip_dollar @},
+    @{ '\0', NULL,        0, NULL @}
+@};
+@end smallexample
+a @code{tip_t} table attache
+@item append var = value
+appends @var{value} to the actual value of the @var{var}. This is
+only recognized for CL_STRING (where both strings are concatenated with
+a space sign in between) and CL_DIRNAME (where old and new value are
+simply glued together) and ignored otherwise.
+@item override var = value
+resets the @var{var} before parsing @var{value}, and is only recognized
+for CL_LIST and CL_BITFIELD. Example:
+
+@smallexample
+bitfield=bit0
+bitfield=bit2
+@end smallexample
+
+and 
+
+@smallexample
+bitfield=bit0|bit2
+@end smallexample
+
+lead to equal results. The same is true for
+
+@smallexample
+bitfield=bit0
+override bitfield=bit2
+@end smallexample
+
+and 
+
+@smallexample
+bitfield=bit2
+@end smallexample
+@end table
+
+@node    programming,Ersetzung,configuration files,Top
+@comment node-name, next,  previous,    up
+@cindex  programming with the library
+@cindex  Conflib, programming
+@chapter Using the library
+For using the library only a few changes to your program are needed.
+Your need to create a configuration table, which assigns the configuration
+variables to internal program variables, and to call the functions
+to read the configuration file.
+
+@menu
+* simple example::             a simple example
+* configfile handle::          configuration file handles
+* variable definition::        how to define a variable
+* enumerations::               how to use enumerations
+* alias::                      using alias names
+* lists::                      using lists
+* bitfields::                  using bitfields
+* configuration table::        Interface between library and program
+
+* easy reading::               a highlevel interface
+
+* open and close::             open and close a configuration file
+* reading and writing::        reading and writing the configuration
+* analyzing::                  analyze a configuration file
+* searching::                  searching functions
+* cleaning up::                cleaning up the mess
+* misc functions::             some other functions
+
+* unknown variables::          handling of unknown variables
+
+* limits::                     limits of the Library
+@end menu
+
+@node    simple example,configfile handle, programming,programming
+@comment node-name, next,  previous,    up
+@section A Simple Example
+This example show a program using two configuration variables. One of
+those may be overridden through an environment variable. It uses
+a configuration file which is not splitted into stanzas.
+
+@smallexample
+@include t_simple.c.texi
+@end smallexample
+
+No magic is involved. @code{cl_getconf} is the function which reads 
+the configuration file. @xref{easy reading,cl_getconf}.
+
+@node    configfile handle, variable definition,simple example,programming
+@comment node-name, next,  previous,    up
+@cindex  configuration file handle
+@section The Configuration File Handle
+There are two ways to read more then one stanza from a configuration
+file. The first is more simple, it just reads each stanza with
+a call to @code{cl_getconfstanza}, see @ref{easy reading,cl_getconfstanza}.
+This is indeed possible, but slow: For every stanza the file
+has to be opened, searched and closed again.
+
+A better way would be to open the file once, scan it once, read 
+it often and close once. To do so a lot of information has to
+be preserved. This information is saved in the 
+@dfn{configuration file handle}.
+
+@deftp {Data Type} {cl_file_t}
+The @code{cl_file_t} data structure is used to hold information 
+the configuration file. It has many members, but there are only
+a few a program should deal with:
+
+@table @code
+@item int report_unknown
+set this to one if you wish the reading function to print out 
+a warning if it finds a variable not described in the configuration
+table.
+@end table
+
+@strong{Never} use the file handle (i might switch to mmap one
+day), and @strong{never} change anything except @code{report_unknown}.
+@end deftp
+
+Many programs don't need this.
+
+@node    variable definition, enumerations,configfile handle,programming
+@comment node-name, next,  previous,    up
+@cindex  variable definition
+@section The data structure that describes a configuration variable
+@deftp {Data Type} {cl_var_t}
+The @code{cl_var_t} data structure is used to hold information about
+an configuration variable. At the time i write this down it has
+the following members:
+
+@table @code
+@cindex variable name
+@cindex varname
+@item const char *varname
+The name of the variable. It is used case insensitive, and underscores
+and minus are treated as the same character.
+
+@item const char *secdata
+used for multiple purposes in dependency of flags and variable
+type. 
+
+@item enum cl_var_typ typ
+the type of the variable
+
+@item void *adr
+the address to write the variables value to.
+
+@item unsigned long flags
+flags.
+
+@item const char *rangeexp;
+A wildcard or regular expression, used for rangechecks on the variables
+value.
+@end table
+
+@var{flags} is a bitfield. For the moment the following bits are
+defined:
+
+@table @code
+@cindex CL_MALLOCED
+@item CL_MALLOCED
+The memory @code{adr} points to is dynamically allocated and should
+be freed (this is done by cl_clearconf (@pxref{cleaning up,cl_clearconf})
+and if this variable is overwritten by a library function).
+
+@cindex CL_PREENV
+@item CL_PREENV
+If this bit is set the library will, before it actually reads a
+stanza or a whole configuration file, read the environment variable
+with the name given in @var{secdata} into the configuration
+variable. 
+
+This can be done for the data types @code{CL_STRING}, @code{CL_DIRNAME},
+@code{CL_CHAR}, @code{CL_NUM}, @code{CL_NUMSHORT} and @code{CL_BOOLEAN}.
+The bit is ignored fo any other type.
+
+@cindex CL_POSTENV
+@item CL_POSTENV
+Like CL_PREENV, but the environment is read @emph{after} the reading
+of the configuration file.
+
+@cindex CL_VAR_NOT_DONE
+@item CL_VAR_NOT_DONE
+@strong{internal use only}.
+
+@cindex CL_MAY_SAVE
+@item CL_MAY_SAVE
+Set this bit if @code{cl_putstanza} shall save this variable. 
+@xref{reading and writing,cl_putstanza}.
+
+@cindex CL_RANGE_REGEX
+@item CL_RANGE_REGEX
+If this bit is set then a range check will be done before
+a new value is assigned to the variable. If this fails
+the new value is not assign.
+
+The range check is done with a casesensitive regular expression match
+against the string in @var{rangeexp}.
+
+No regular expression rangecheck will be done if your systems
+library does not support POSIX regular expressions-
+
+@cindex CL_RANGE_WILDCARD
+@item CL_RANGE_WILDCARD
+Like CL_RANGE_REGEX, but the match is done as a casesensitive
+wildcard match. This functionality is available even if the
+c library has no fnmatch function.
+
+@cindex CL_WARNING
+@item CL_WARNING
+Warn if this variable is used.
+
+@end table
+@end deftp
+
+@deftp {Data Type} {enum cl_var_typ}
+This enumerated type describes what the kind of variable.
+Here are the possible values:
+
+@table @code
+@item CL_STRING
+a simple string. @var{adr} should be of type @code{char **}.
+
+@item CL_NUM
+a long integer. @var{adr} should be of type @code{long *}.
+
+@item CL_NUMSHORT
+a short integer. @var{adr} should be of type @code{short *}.
+
+@item CL_BOOLEAN
+a boolean. @var{adr} should be of type @code{int *}.
+
+@item CL_ARRAY
+an array of simple strings. @var{adr} should be of
+type @code{char *xxx[CL_MAXARRAY]}.
+
+@item CL_ENUM
+an enumeration. @var{adr} should be of type @code{long *}.
+@xref{enumerations} for more information.
+
+@item CL_ALIAS
+an alias for another variable, very often used for compatability
+with older versions. @xref{alias}.
+
+@var{adr} is ignored. @var{secdata} should hold the name of
+the variable this one is an alias for.
+
+@item CL_DUMMY
+this variable will be completely ignored.
+
+@item CL_LIST
+a list. @var{adr} should be of type @var{cl_list_t **}.
+
+@item CL_CHAR
+a single character. @var{adr} should be of the @var{char *}.
+
+Any character after the first is ignored.
+
+@item CL_DIRNAME
+a directory name. Basically the same as @code{CL_STRING}, but
+a slash (@code{/}) ist appended, if it does end with another
+character.
+@end table
+@end deftp
+
+@node    enumerations,alias,variable definition,programming
+@comment node-name, next,  previous,    up
+@cindex  enumerations
+@cindex  CL_ENUM
+@section enumerations
+enumerations are described with this data type:
+
+@deftp {Data Type} {cl_enum_t}
+@table @code
+@item char *magic
+This string has to be found in the configuration file.
+
+@item long value
+The value to be assigned to the configuration variable.
+
+@end table
+@end deftp
+
+The @var{secdata} element of an enumeration variable (@xref{variable definition}) 
+points to an array of cl_enum_t. This array is terminated with an
+element with @var{magic} @code{NULL}.
+
+An example:
+
+@smallexample
+cl_enum_t zahlen[]=
+@{
+@{   "Null",   0 @}, @{    "Zero",   0 @},
+@{   "Eins",   1 @}, @{    "One",    1 @},
+@{   "Zwei",   2 @}, @{    "Two",    2 @},
+@{   "Drei",   3 @}, @{    "Three",  3 @},
+@{   "Vier",   4 @}, @{    "Four",   4 @},
+@{   "Fuenf",  5 @}, @{    "Five",   5 @},
+@{   "Sechs",  6 @}, @{    "Six",    6 @},
+@{   "Sieben", 7 @}, @{    "Seven",  7 @},
+@{   "Acht",   8 @}, @{    "Eight",  8 @},
+@{   "Neun",   9 @}, @{    "Nine",   9 @},
+@{   NULL,     0 @}
+@};
+long value;
+cl_var_t Tab[] =
+@{
+    @{ "value", zahlen, CL_ENUM, &value, 0,NULL@},
+    @{ NULL,NULL,0,NULL,0 @}
+@};
+@end smallexample    
+
+
+@node    alias, lists,enumerations,programming
+@comment node-name, next,  previous,    up
+@cindex  CL_ALIAS
+@cindex  Alias
+@section other names for variables
+An alias makes it possible to use two or more names for the same
+configuration variable. This is useful to be able to read old
+configuration files even if some variables have changed their
+names.
+
+The alias gets an element in the configuration table, with an
+own and uniq name in the @var{varname} element, and the name
+of the real variable in @var{secdata}. 
+
+If the variable in @var{secdata} is not found the functions
+will return an error (i still think it should simply call
+abort()). Fix your software.
+
+An alias may point to another alias.
+
+@node    lists, bitfields, alias, programming
+@comment node-name, next,  previous,    up
+@cindex  CL_LIST
+@cindex  lists
+@section Lists
+Lists are lines in the configuration file, which are taken apart by
+cl_getstanza (@pxref{reading and writing,cl_getstanza}). The elements 
+are separated with special characters.
+
+The default separators are horizontal tabulator, space and colon,
+but you can change that with the @var{secdata} element of the
+variable description (@pxref{variable definition,secdata}). 
+
+@deftp {Data Type} {cl_list_t}
+This structure describes a list element. It contains the following
+members:
+
+@table @code
+@item char *inhalt
+the value of the list element
+
+@item struct cl_list_t *next
+points to the next list element.
+
+@end table
+@end deftp
+
+A list may be splitted into many lines. An example:
+
+@smallexample
+list=Hello
+list=world
+@end smallexample
+
+The next example gives an identical result:
+
+@smallexample
+list=Hello world
+@end smallexample
+
+Separators are ignored if they follow another separator. The following
+examples results a list containing @code{Hello} and @code{world}:
+
+@smallexample
+list=Hello: world
+@end smallexample
+
+Example:
+
+@smallexample
+cl_list_t *list;
+cl_list_t *ptr;
+
+cont_f tab[]=
+@{
+	@{ "list", ": ,\t",      CL_LIST,      &list     ,0 @},
+	@{ NULL,NULL,0,NULL,0 @}
+@}
+cl_getconf("config.cnf",tab);
+for (ptr=list; ptr != NULL; ptr=prt->next)
+    puts(ptr->inhalt);
+@end smallexample
+
+@node    bitfields, configuration table, lists, programming
+@comment node-name, next,  previous,    up
+@cindex  bitfields table
+@section Bitfields
+Bitfields are simple but powerful constructs which can often
+be used to put many related boolean variables in a single 
+variable.
+
+Their implementation is much like that of the enumerations, 
+see @ref{enumerations}, especially they are described by 
+the same data type cl_enum_t (@pxref{enumerations,cl_enum_t}. 
+A significant difference is that enumerations are saved as
+signed longs, bitfields as unsigned longs.
+
+Words can have a @key{!} as prefix, meaning @code{negate 
+this bit}.
+
+Here is an example of their usage in a program:
+
+@smallexample
+cl_enum_t bitfield_enum[]=
+@{
+@{   "bit0",   1 @},
+@{   "bit1",   2 @},
+@{   "bit2",   4 @},
+@{   "bit3",   8 @},
+@{   "bit4",   16 @},
+@{   "bit5",   32 @},
+@{   "bit6",   64 @},
+@{   "bit7",   128 @},
+@{   NULL,     0 @}
+@};
+unsigned long bitfield;
+cl_var_t Tab[] = @{
+    @{ "bitfield",  bitfield_enum, CL_BITFIELD,&bitfield,0          ,NULL @},
+[etc]
+@end smallexample
+
+and an example of a configuration file:
+
+@smallexample
+  bitfield=bit2|bit7
+  bitfield=bit2|bit7|!bit6|!!bit5
+@end smallexample
+
+@node    configuration table, easy reading, bitfields,programming
+@comment node-name, next,  previous,    up
+@cindex  configuration table
+@section The Configuration Table
+The configuration table is the interface between program and library.
+It's an array of @code{cl_var_t} (@pxref{variable definition}), terminated with
+an @code{NULL} element. Each array element describes a variable. 
+
+Example:
+
+@smallexample
+short numshort;
+long num;
+int  bool_true;
+int  bool_false;
+char *stanza;
+char *array[CL_MAXARRAY]=@{NULL@};
+
+cl_var_t Tab[] =
+@{
+    @{ "numshort",   "Enumshort",   CL_NUMSHORT,  &numshort ,CL_POSTENV@},
+    @{ "num",        "Enum",        CL_NUM,       &num        ,0@},
+    @{ "bool_false", "Ebool_false", CL_BOOLEAN,   &bool_false ,0@},
+    @{ "bool_true",  "Ebool_true",  CL_BOOLEAN,   &bool_true  ,0@},
+    @{ "string",     "Estring",     CL_STRING,    &string     ,0@},
+    @{ "array",      "Earray",      CL_ARRAY,     array       ,0@},
+    @{ NULL,NULL,0,NULL ,0@}
+@};
+@end smallexample
+
+The line
+@smallexample
+    @{ "numshort",   "Enumshort",   CL_NUMSHORT,  &numshort ,CL_POSTENV@},
+@end smallexample
+describes a variable with the name @code{numshort}. It's a short
+number (@code{CL_NUMSHORT}), and the value is written into the C
+variable @code{numshort}. It the environment variable 
+@code{Enumshort} is set it overrides the value in the configuration
+file.
+
+@node easy reading,open and close,configuration table,programming
+@section A High Level Interface
+@include cl_getconf.texi
+@include cl_gcstanza.texi
+
+@node open and close,reading and writing,easy reading,programming
+@section Opening and closing a configuration file
+
+@include cl_openconf.texi
+@include cl_closeconf.texi
+
+@node reading and writing,analyzing,open and close,programming
+@section Reading and writing
+
+@include cl_getstanza.texi
+@include cl_putstanza.texi
+@include cl_writeconf.texi
+
+@node analyzing,searching,reading and writing,programming
+@section Analyzing a configuration file
+@include cl_alist.texi
+
+@node searching,cleaning up,analyzing,programming
+@section Searching functions
+@include cl_find_var.texi
+
+The following two functions search conflib array. They are here for
+compatability only, i'm thinking about a better interface.
+
+@include cl_in_array.texi
+@include cl_in_warray.texi
+
+@node cleaning up,misc functions,searching,programming
+@section Cleaning up
+
+@include cl_clearconf.texi
+@include cl_free_unk.texi
+
+@node misc functions,unknown variables,cleaning up,programming
+@section Miscellaneous functions
+
+@include cl_getvers.texi
+@include cl_unalias.texi
+@include cl_setvar.texi
+
+@node unknown variables,limits,misc functions,programming
+@section Handling Of Unknown Variables
+@cindex unknown variables
+There may be unknown variables used in the configuration file
+your program doesn't know about. In many cases the best solution
+is to ignore them - your program doesn't know what to do with
+them, and other program might need them (this might happen
+if configuration files or stanzas are shared between applications).
+So the default behaviour if to ignore them - cl_getstanza will 
+not read them, and cl_putstanza will leave them in.
+
+But there are situations you want to know them. Think of a generic
+configuration file editor - it @emph{has} to handle them.
+
+First the good news: cl_getstanza and cl_putstanza can handle
+unknown variables. The bad news: The solution is not beautiful
+(but i haven't found a better one).
+
+This data type describes an unknown variable:
+
+@deftp {Data Type} {cl_ulist_t}
+The @code{cl_ulist_t} data structure is used to hold information about
+an unknown variable variable. At the time i write this down it has
+the following members:
+
+@table @bullet
+@item char *varname
+the name of the variable
+
+@item char *inhalt
+the value
+
+@item struct cl_ulist_t *next
+a pointer to the next unknown variable.
+
+@end table
+@end deftp
+
+You may use this data type as parameter for cl_getstanza and
+cl_putstanza like this (error handling left out):
+
+@smallexample
+cl_ulist_t *unknowns=NULL;
+cl_ulist_t *ptr=NULL;
+extern cl_var_t *tab;
+extern cl_file_t *handle;
+cl_getstanza(handle,tab,"stanza25,0,&unknowns);
+for (ptr=unknowns;ptr!=NULL;ptr=ptr->next) @{
+    printf("%s=%s\n",ptr->varname,ptr->inhalt);
+    /* do something else */
+@}
+cl_putstanza(handle,tab,"stanza25",0,&unknowns);
+cl_free_unknowns(unknowns);
+@end smallexample
+
+For more information see @ref{reading and writing, cl_getstanza},
+@ref{reading and writing,cl_putstanza}, and @ref{cleaning up,
+cl_free_unknowns}.
+
+
+@node    limits,,unknown variables,programming
+@comment node-name, next,  previous,    up
+@cindex  limits
+@section Limitations
+the library has some limits:
+
+@table @code
+@cindex maximal array size
+@item KT_MAXARRAY
+limits the maximal number of array elements. It's currently 256 and
+can be changed in conflib.h (but think again before doing so - a
+better solution is a new data type which allocates the array dynamically).
+The last element, the NULL element, counts as used, so an array has
+255 usable elements maximal (but that should be enough for the very
+most purposes).
+
+@cindex maximal input line length
+@item 1023
+is the maximal length of a line in a configuration file. Splitted
+lines (the ones with a backslash at the end) count as one line.
+It's not too hard to make that dynamic, have a look into getgcstanza.c.
+
+@cindex CL_PREENV Limitation
+@cindex CL_POSTENV Limitation
+@item CL_PREENV
+@itemx CL_POSTENV
+are only used for simple data types. This are:
+
+@enumerate
+@item CL_NUM
+@item CL_NUMSHORT
+@item CL_BOOLEAN
+@item CL_STRING
+@end enumerate
+
+@end table
+
+@include tinterp.texi
+
+@node    todo,Index,Ersetzung,Top
+@comment node-name, next,  previous,    up
+@unnumbered Problems And Missing Features
+@cindex bugs
+@cindex todo
+
+@table @bullet
+@item getpwent etc are used. 
+
+@item the array handling is broken
+the library should allocate the needed place for the array.
+
+@item array search functions are broken
+cl_isinwarray and cl_isinarray should be one function. They should
+not return 1, but either an index of the found string or a 
+pointer to its address.
+
+cl_isinwarray should have an option to match caseinsensitive
+
+@item variable deletion impossible
+it's not possible to delete a variable with cl_putconf().
+
+@item lines a limited to 1024 chars
+the maximal line length is limited to 1024 characters. It should
+not be to hard to change this, but ... have a look into cl_getstanza.c.
+
+@end table
+
+@node    Index,,todo,Top
+@comment node-name, next,  previous,    up
+@unnumbered Konzepte
+@printindex cp
+
+@contents
+@bye
+                              
+
+

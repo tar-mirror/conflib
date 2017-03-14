@@ -1,0 +1,15 @@
+proc conflib_version {} {
+	global objdir
+	set tmp [exec "$objdir/conflibtest" "-V"]
+	regexp "conflib version (\[0-9.\]+)" $tmp tmp version
+	clone_output "$objdir/conflibtest version $version\n"
+}
+proc tinterp_version {} {
+	global objdir
+	set tmp [exec "$objdir/conflibtest" "--version"]
+	regexp "conflib. (\[0-9.\]+)" $tmp tmp version
+	clone_output "$objdir/conflibtest version $version\n"
+}
+proc conflib_exit {} {}
+proc tinterp_exit {} {}
+

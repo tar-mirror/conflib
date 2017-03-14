@@ -1,0 +1,10 @@
+@deftypefn {Function} {int} cl_getconf (const char *@var{fname}, cl_var_t *@var{conftab})
+
+Reads the whole configuration file @var{fname} into
+@var{conftab}. 
+
+This function is identical with calling 
+@code{cl_getconfstanza(@var{fname},@var{conftab},0)}.
+
+Returns 0 if successful, and other values if not.
+@end deftypefn

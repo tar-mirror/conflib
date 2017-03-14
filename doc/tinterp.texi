@@ -1,0 +1,509 @@
+@setfilename dummy
+
+@node Ersetzung,todo,programming,Top
+@chapter Textinterpretation und -Ersetzung
+
+@menu
+* $-Ersetzung::           Ersetzung durch EnvironmentvariablenA
+* C-Escapesequenzen::     C-aehnliche Escapesequenzen
+* ~-Ersetzung::           Heimatverzeichnisse
+* Bedingungen::           Bedingte Textersetzung
+* Einbindung::            Benutzung der Routinen in eigenen Programmen
+@end menu
+
+@node    $-Ersetzung,C-Escapesequenzen,Ersetzung,Ersetzung
+@comment node-name, next,  previous,    up
+@cindex  $-Ersetzung
+@cindex Environtmentvariablen, Ersetzung
+@section Ersetzung durch Environmentvariablen
+@table @var
+
+@item $NAME
+Die Zeichenkette wird durch den Inhalt der Environmentvariablen 
+@code{NAME} ersetzt. Der Bezeichner @code{NAME} darf dabei nur 
+aus Buchstaben, Ziffern und Unterstrichen bestehen.
+
+Ist die Environmentvariable @code{name} nicht gesetzt, wird ein
+Leerstring eingesetzt.
+
+@item $(NAME)
+Wie oben, mit der Ausnahme, dass der Bezeichner @code{NAME} 
+auch Sonderzeichen mit Ausnahme der geschlossenen Klammer 
+enthalten darf.
+@end table
+
+@node    C-Escapesequenzen,~-Ersetzung,$-Ersetzung,Ersetzung
+@comment node-name, next,  previous,    up
+@cindex  C-Escapesequenzen
+@cindex Escapesequenzen
+@section C-aehnliche Escapesequenzen
+@table @samp
+@item \0[0-7]+
+Ein Backslashs, gefolgt von einer oktalen Zahl (die mit einer 0 zu beginnen hat)
+wird durch das ASCII-Zeichen ersetzt, dessen Wertigkeit der Zahl 
+entspricht.
+@code{\0101} wird durch das Zeichen @code{A} ersetzt.
+@item \0x[0-9a-fA-F]+
+Ein Backslashs, gefolgt von ieiner @code{0}, einem @code{x} und hexadezimalen
+Zahlen, wird durch das ASCII-Zeichen ersetzt, dessen Wertigkeit der Zahl 
+entspricht.
+@code{0\x42} wird durch das Zeichen @code{B} ersetzt.
+@item \[1-9][0-9]+
+Ein Backslash, gefolgt von einer Ziffer zwischen @code{1} und
+@code{9} einschliesslich, sowie optional weiteren Ziffern von @code{0}
+bis @code{9}, wird durch das ASCII-Zeichen ersetzt, dessen Wertigkeit der Zahl 
+entspricht.
+@code{\67} wird durch das Zeichen @code{C} ersetzt.
+@item \\
+wird durch einen einzelnen Backslash (@code{\}) ersetzt
+@item \a
+wird durch das Zeichen ersetzt, bei dessen Ausgabe auf ein Terminal
+ein Ton erklingt (im Klartext: Dies ist das Glockenzeichen, die Bell).
+@item \b
+wird durch ein Backspace ersetzt.
+@item \f
+wird durch ein Formfeed ersetzt.
+@item \n
+wird durch einen Zeilenvorschub ersetzt.
+@item \r
+wird durch ein @code{CR}, einen Wagenruecklauf ersetzt.
+@item \t
+wird durch einen horizontalen Tabulator ersetzt.
+@item \v
+wird durch einen vertikalen Tabulator ersetzt.
+@item \$
+wird durch ein Dollarzeichen (@code{$}) ersetzt.
+@item \~
+wird durch eine Tilde (@code{~}) ersetzt.
+@end table
+
+@node ~-Ersetzung,Bedingungen,C-Escapesequenzen,Ersetzung
+@comment node-name, next,  previous,    up
+@cindex  ~-Ersetzungen
+@cindex Heimatverzeichnis, Ersetzung
+@section Ersetzung durch Heimatverzeichnisse
+@table @var
+@item ~
+wird durch das Heimatverzeichnis des Benutzers ersetzt. 
+
+@smallexample
+Wenn das Heimatverzeichnis @code{/home/uwe} ist, dann wird
+@code{~} durch @code{/home/uwe} ersetzt.
+@end smallexample
+
+@item ~name
+Der Ausdruck wird durch das Heimatverzeichnis des Benutzers
+mit dem Namen @code{name} ersetzt.
+
+@smallexample
+@code{~uwe} wird durch @code{/home/uwe} ersetzt.
+@end smallexample
+
+@item ~(name)
+Der Ausdruck wird durch das Heimatverzeichnis des Benutzers
+mit dem Namen @code{name} ersetzt. Diese Version ist 
+vorzuziehen, wenn @code{name} Sonderzeichen enthaelt oder 
+sich direkt daran weitere Zeichen oder Buchstaben 
+anschliessen.
+
+@smallexample
+@code{~(uwe)/tmp} wird durch @code{/home/uwe/tmp} ersetzt.
+@end smallexample
+
+@item ~~
+wird durch eine Tilde (@code{~}) ersetzt.
+
+@end table
+@node    Bedingungen,Einbindung,~-Ersetzung,Ersetzung
+@comment node-name, next,  previous,    up
+@section Bedingte Textersetzung
+Das @code{$[}-Konstrukt ermoeglicht eine Textersetzung in Abhaengigkeit 
+vom Ergebnis einer Bedingung. Die Syntax ist:
+
+@example
+    $[bedingung?was-wenn-wahr:was-wenn-falsch]
+Der @code{else}-Teil der Bedingung darf weggelassen werden:
+    $[bedingung?was-wenn-wahr]
+@end example
+
+@code{bedingung} kann sein:
+
+@table @bullet
+@item something==something-else
+Das Ergebnis der Bedingung ist wahr, wenn die Interpretationsergebnisse
+von @code{something} und @code{something-else} gleich sind.
+
+@item something!=something-else
+Das Ergebnis der Bedingung ist wahr, wenn die Interpretationsergebnisse
+von @code{something} und @code{something-else} ungleich sind.
+
+@item something
+In diesem Fall ist die Bedingung wahr, wenn das Interpretationsergebnis
+von @code{something} nicht leer ist.
+@end table
+
+Der Term in den eckigen Klammern wird erst in seine Einzelteile 
+zerlegt, dann erst werden die notwendigen Interpretationen ausgefuehrt.
+Nicht notwendige Interpretationen (zum Beispiel der @code{else}-Teil
+einer wahren Bedinungen) werden nicht durchgefuehrt.
+
+@node    Einbindung,,Bedingungen,Ersetzung
+@comment node-name, next,  previous,    up
+@cindex  Programmierung, Textersetzung
+@cindex  Programmierung, Interpretation
+@section Einbindung der Textersetzungsroutinen in eigenen Programmen
+Der Einsatz der Library erfordert nur geringe Aenderungen am Programm:
+
+@itemize @bullet
+@item tip_interpret muß an passenden Programmstellen aufgerufen
+werden. Siehe @ref{tip_interpret}.
+
+@item Eine Tabelle mit den zu beruecksichtigenden Interpretationsroutinen
+muss aufgestellt werden.
+
+@item Falls zusaetzliche Ersatzroutinen zur Verfuegung gestellt werden
+sollen, muessen diese programmiert werden.
+
+@item Die Library muss durch Aufruf der Funktion tip_init initialisiert
+werden. Siehe @ref{tip_init} fuer weitere Informationen.
+
+@item Und sie muss durch den Aufruf von tip_deinit deinitialisiert werden.
+Siehe @ref{tip_init}.
+@end itemize
+
+@menu
+* tip_interpret::              Textersetzung in einem String durchfuehren
+* tip_fn_t::                   Textersetzungssubroutinen
+* Standardroutinen::           Standardersatzroutinen der Library
+* Makros::                     Makros definieren und loeschen
+* tip_init::                   (De-)Initialisierung der Library
+* tip_beispiel::               Ein Beispiel fuer den Einsatz der Routine
+@end menu
+
+@node    tip_interpret,tip_fn_t,Einbindung,Einbindung
+@comment node-name, next,  previous,    up
+@subsection Durchfuehrung der Ersetzung
+
+Die Textersetzung wird durch die Routine tip_interpret durchgefuehrt:
+
+@cindex tip_interpret
+@deftypefun size_t tip_interpret 
+    (tip_t *@var{tab}, const char *@var{format}, 
+    char *@var{to}, size_t @var{maxlen})
+
+Die Funktion fuehrt die Ersetzung durch. Sie durchsucht den String
+@var{format} zeichenweise. Falls das Zeichen einem @var{magic} der Tabelle
+entspricht oder die nächsten Zeichen einem der @code{magicstrings} in
+der Tabelle entsprechen, wird die assozierte Routine @var{tab->interp}
+aufgerufen. Falls @var{tab->interp} nicht zustaendig ist
+(@code{TIP_NOTDONE} zurueckliefert), wird die Tabelle weiter durchsucht.
+
+@code{tip_interpret} liefert die
+die Anzahl der geschriebenen Zeichen ohne das abschliessende
+@code{'\0'}, also @code{strlen(to)}, oder @code{TIP_ERROR}, 
+falls ein Fehler auftrat, zurueck.
+@end deftypefun
+
+Die tip_interpret zu uebergebende Tabelle @var{tab} wird durch ein
+Element beendet, dessen @code{magic} @code{'\0'} und dessen 
+@code{magicstring} @code{NULL} ist. Der Datentyp ist
+definiert als:
+
+@deftp {Datentyp} tip_t
+@lisp
+typedef struct
+@{
+    char magicchar;
+    const char *magicstring;
+    size_t magiclen;
+    tip_fn_t interp;
+@} tip_t;
+@end lisp
+@end deftp
+
+Die Routine @code{interp} wird aufgerufen, falls:
+
+@enumerate
+@item @code{magicchar} ungleich '\0' und das nächste Zeichen im zu
+interpretierenden Text gleich @code{magicchar} ist, oder
+@item @code{magicstring} ungleich @code{NULL} ist und die nächsten 
+@code{magiclen} Zeichen im zu interpretierenden Text gleich @code{magicstring}
+sind. 
+@end enumerate
+
+@code{interp} wird unter @ref{tip_fn_t} beschrieben.
+
+@code{tip_t} wird niemals einzeln verwendet, sondern immer nur als
+Array, dessen letztes Element als @var{magic} ein @code{'\0'} hat
+und dessen @code{magicstring} @code{NULL} ist.
+
+@cindex  tip_ainterpret
+@deftypefun char *tip_ainterpret 
+    (tip_t *@var{tab}, const char *@var{format})
+
+Die Funktion arbeitet wie tip_interpret, alloziert aber den Speicherbereich
+für das Ergebnis selbst. Das verwendete Verfahren führt unter Umständen
+dazu, daß einzelne Interpretationen mehrfach durchgeführt werden.
+@end deftypefun
+
+@node    tip_fn_t,Standardroutinen,tip_interpret,Einbindung
+@comment node-name, next,  previous,    up
+@cindex  tip_fn_t
+@subsection Ersetzungsunterroutinen: tip_fn_t
+@deftypefun size_t tip_function 
+    (const char *@var{this}, const char **@var{next}, 
+    char *@var{to}, size_t @var{maxlen})
+
+Die Funktion wird aufgerufen, wenn tip_interpret (siehe @ref{tip_interpret})
+im @var{format}-String ein oder mehrere Zeichen fand, die 
+der @code{tip_function} 
+in der Tabelle @var{tab} zugeordnet wurden. Sie erhaelt folgende 
+Parameter:
+
+@table @var
+@item this
+zeigt auf das @var{magic} im Formatstring. 
+@item next
+muss auf das naechste zu verarbeitende Zeichen im Eingabestring gesetzt
+werden, wenn @code{tip_function} eine Ersetzung durchfuehren konnte.
+@item to
+Ab dieser Position soll das Ergebnis abgelegt werden.
+@item maxlen
+Maximale Groesse des Ergebnisstrings. Bei Ueberschreitung ist TIP_ERROR
+zurueckzuliefern.
+@end table
+
+Returncodes:
+@table @bullet
+@item TIP_NOTDONE
+Die Funktion ist nicht aktiv geworden. tip_interpret soll versuchen, 
+andere Routinen zu finden.
+@item TIP_ERROR
+Ein Fehler ist aufgetreten, tip_interpret soll abbrechen.
+@item Zahl 
+Die Laenge des aus der Ersetzung hervorgegangenen Strings ohne die
+abschliessende 0.
+@end table
+
+Wird eine Ersetzung durchgefuehrt, ist der String mit einer 0 abzuschliessen.
+@end deftypefun
+
+@node Standardroutinen,Makros,tip_fn_t,Einbindung
+@comment node-name, next,  previous,    up
+@cindex Standardroutinen
+@subsection Standardersatzroutinen der Library
+Folgende Ersatzroutinen enthaelt die Library:
+
+@table @bullet
+@item tip_dollar
+Ersetzung durch Environmentvariablen, erwartet als @code{magic} das
+Zeichen @code{$}. Siehe @ref{$-Ersetzung}.
+
+@item tip_tilde
+Ersetzung durch Heimatverzeichnisse. Siehe @ref{~-Ersetzung} fuer eine
+Beschreibung der vorgenommenen Ersetzungen. Die Funktion erwartet als
+@code{magic} das Zeichen @code{~}.
+
+@cindex getpwuid
+@cindex getpwnam
+@cindex <pwd.h>
+Bei Einsatz von tip_tilde ist Vorsicht geboten. Die Zugriffe auf die
+Passwortdatei, die notwendig sind, um das Heimatverzeichnis feststellen
+zu können, geschehen mit Hilfe der Funktionen @code{getpwuid} 
+und @code{getpwnam}, und verstellen daher den Dateizeiger 
+saemtlicher @file{/etc/passwd} mit Hilfe der Routinen
+aus <pwd.h> lesender oder schreibender Funktionen. Bei Aufruf von 
+@code{tip_deinit} wird @code{endpwent} aufgerufen, falls tip_tilde vorher
+aufgerufen worden ist.
+
+@item tip_backslash
+Ersetzung durch C-aehnliche Escapesequenzen. Siehe
+@ref{C-Escapesequenzen} fuer eine Aufstellung der verstandenen
+Esacpecodes. Die Funktion erwartet als @code{magic} das Zeichen
+@code{\\}.
+
+@item tip_conditional
+Die Bedingungen sind dadurch realisiert. Siehe @ref{Bedingungen}.
+Als @code{magicstring} wird @code{$[} erwartet. Die Bedinungen muß
+außerdem mit einem @code{]} abgeschlossen werden.
+
+@item tip_strip
+Eine Funktion, die ihren Parameterstring von führenden und
+abschließenden Leerzeichen und Tabs befreit. Der Parameterstring
+wird vor der Kürzung interpretiert.
+
+Als @code{magicstring} wird @w{@code{$@{strip }} erwartet. Der
+Ausdruck muß außerdem mit einem @code{@}} abgeschlossen werden.
+
+Die Funktion kann als Beispiel für eigene Funktionen dienen.
+
+@item tip_macro
+Die Funktion setzt den Wert des ihr übergebenen Makros ein. Ist das
+Makro nicht definiert, wird @code{undefined} eingesetzt. Der Ausdruck
+muß mit einem @code{@}} abgeschlossen werden.
+
+Das Beispiel setzt den Inhalt des Makros @code{test} ein.
+@smallexample
+	$@{macro test@}
+@end smallexample
+
+@item tip_defmacro @var{macroname} @var{value}
+Die Funktion setzt @var{value} als Wert des Makros @var{macroname} ein.
+Der Ausdruck muß mit einem @code{@}} abgeschlossen werden. Fehlt @var{value},
+wird ein leerer String als Wert eingesetzt.
+
+Das Beispiel setzt das Makro @code{test} auf @code{hallo}:
+@smallexample
+	$@{defmacro test hallo@}
+@end smallexample
+
+@code{tip_defmacro} ist über die Funktion @code{tip_defmacro_intern}
+realisiert, siehe @ref{Makros}.
+
+@item tip_undefmacro @var{macroname}
+löscht den Wert des Makros mit dem Namen @var{macroname}. Es ist kein
+Fehler, wenn @var{macroname} gar nicht definiert ist (sprich: man
+kann ein Makro so oft löschen, wie man will).
+
+@item tip_literal
+Die Funktion setzt ihre Argumente ein, ohne sie zu interpretieren.
+Der Ausdruck muß mit einem @code{@}} abgeschlossen werden. Der Scanner,
+der nach der abschliessenden Klammer sucht, ist recht empfindlich, und
+verlangt, daß der Parameterstring der Syntax der Interpretationsroutinen
+genügt. 
+
+Das Beispiel setzt einen einzelnen $ ein, ist also eine aufwendigere
+Schreibweise für @code{\$}:
+
+@smallexample
+	$@{literal %@}
+@end smallexample
+
+@item tip_force
+Die Funktion interpretiert die Parameterstring zweimal.
+Der Ausdruck muß mit einem @code{@}} abgeschlossen werden.
+
+Das Beispiel zeigt, wie man aus vier Backslashs einen machen kann:
+
+Das Beispiel setzt den Inhalt des Makros @code{test} ein.
+@smallexample
+	$@{force \\\\@}
+@end smallexample
+
+@end table
+
+@node Makros,tip_init,Standardroutinen,Einbindung
+@comment node-name, next,  previous,    up
+@subsection Definition und Nutzung von Makros
+@cindex Makros
+Makros dienen als Schreiberleichterung. Sie behalten ihren Inhalt
+bis sie gelöscht werden oder das Programm endet.
+
+Es gibt zwei Arten, Makros einen Wert zuzuweisen:
+
+@enumerate
+@item tip_defmacro
+Diese Routine wird von @code{defmacro} aufgerufen, kann also benutzt
+werden, um aus einer interpretierten Datei heraus einen Makrowert
+zu setzen.
+
+@item tip_defmacro_intern
+Diese Funktion kann aus C-Programmen benutzt werden. @code{intern}
+bezieht sich darauf, daß ihr Aufruf in das Programm eincodiert
+werden muß.
+@end enumerate
+
+Es gibt zwei Arten, ein Makros zu löschen:
+@enumerate
+@item tip_undefmacro
+Diese Routine wird von der Interpretationsfunktion @code{undefmacro}
+aufgerufen, kann also benutzt werden, um aus einer interpretierten
+Datei heraus ein Makro zu löschen.
+@item tip_defmacro_intern
+Erhält diese Funktion als Wert einen Nullpointer übergeben, 
+wird das Makro gelöscht.
+@end enumerate
+
+Ein Makro kann auch einen leeren Wert haben. 
+
+Beide Arten, eine Makro zu definieren oder zu löschen sind identisch
+und arbeiten auf derselben Datenbasis.
+
+@cindex tip_defmacro_intern
+@deftypefun char *tip_defmacro_intern 
+    (const char *@var{varname}, const char *@var{value})
+
+Mit dieser Funktion kann man aus einem C-Programm heraus 
+ein Makro auf einen Wert setzen (@var{value} != NULL) oder
+ein Makro löschen (@var{value} == NULL).
+@end deftypefun
+
+@node tip_init,tip_beispiel,Makros,Einbindung
+@comment node-name, next,  previous,    up
+@subsection Initialisierung und Deinitialisierung der Library
+
+@cindex tip_init
+@deftypefun int tip_init()
+Initialisiert die Library. Zur Zeit Dummyfunktion.
+Liefert 0 bei Erfolg, sonst einen Wert ungleich 0.
+@end deftypefun
+
+@cindex tip_deinit
+@deftypefun int tip_deinit()
+Deinitialisiert die Library. Zur Zeit ruft sie nur @code{endpwent} auf,
+und auch nur, falls tip_tilde eine der Routinen aus <pwd.h> benutzt hat.
+Liefert 0 bei Erfolg, sonst einen Wert ungleich 0.
+@end deftypefun
+
+@node tip_beispiel,,tip_init,Einbindung
+@subsection Beispiel fuer den Einsatz der Routinen in eigenen Programmen
+
+@smallexample
+static size_t my_tip_prozent(const char *this, const char **next,
+    char *to, size_t maxlen);
+
+tip_t tab[]=
+@{
+	@{'$',tip_dollar@},
+	@{'\\',tip_backslash@},
+	@{'%',my_tip_prozent@},
+	@{0,NULL@},
+@};
+
+static void mylog(const char *format);
+
+static size_t my_tip_prozent(const char *this, const char **next,
+    char *to, size_t maxlen)
+@{
+	char buf[128];
+	time_t t;
+	size_t l;
+	switch(this[1])
+	@{
+	case 't': /* %t -> Ausgabe von ctime() ohne \n */
+		if (maxlen<25) /* strlen(ctime) */
+			return TIP_ERROR;
+		time(&t);
+		strcpy(to,ctime(&t));
+		*strchr(to,'\n')=0;
+		return 24;
+	case 'p': /* %p -> pid */
+		sprintf(buf,"%ld",(long) getpid());
+		l=strlen(buf);
+		if (l+1>maxlen)
+			return TIP_ERROR;
+		strcpy(to,buf);
+		return l;
+	@}
+	return TIP_NOTDONE;
+@};
+
+extern FILE *logfile;
+
+static void mylog(const char *format)
+@{
+	char buf[4096];
+	if (tip_interpret(tab,format,buf,sizeof(buf))!=TIP_ERROR)
+		fprintf(logfile,"%s\n",buf);
+@}
+@end smallexample

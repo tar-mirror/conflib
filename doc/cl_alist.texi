@@ -1,0 +1,38 @@
+@deftypefn {Function} {char **} cl_build_stanza_array (const char *@var{pattern}, cl_file_t *var{file})
+
+Generates an array containing the names of all stanzas
+matching @var{pattern} in the configuration file 
+@var{file}. The last element is a @code{NULL} pointer.
+
+@var{pattern} must not be a @code{NULL} pointer. Use @code{*}
+instead.
+
+This function returns the array or @code{NULL} if an
+error occured.
+
+If no stanza name matches @var{pattern} the function returns 
+an empty array with the first element beeing the @code{NULL}
+pointer.
+@end deftypefn
+@deftypefn {Function} {void} cl_delete_stanza_array (char **@var{array})
+
+Frees all memory used by @var{array} and its elements.
+Sets *@var{array} to @code{NULL}.
+@end deftypefn
+
+An example, with error handling left out:
+
+@smallexample
+cl_file_t *f;
+char **ar;
+f=cl_openconf("something.cnf","r");
+ar=cl_build_stanza_array("*",f);
+if (*ar) @{
+    char **p;
+	for (p=ar;*p;p++)
+	    puts(*p);
+@}
+cl_closeconf(f);
+cl_delete_stanza_array(ar);
+@end smallexample
+ 

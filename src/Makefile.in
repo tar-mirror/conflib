@@ -1,0 +1,399 @@
+# Makefile.in generated automatically by automake 1.3 from Makefile.am
+
+# Copyright (C) 1994, 1995, 1996, 1997, 1998 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+
+SHELL = /bin/sh
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DISTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+host_alias = @host_alias@
+host_triplet = @host@
+CC = @CC@
+ERSATZHEADER = @ERSATZHEADER@
+HAVE_BROKEN_F_SETLK = @HAVE_BROKEN_F_SETLK@
+LD = @LD@
+LIBOBJS = @LIBOBJS@
+LIBTOOL = @LIBTOOL@
+LN_S = @LN_S@
+M4 = @M4@
+MAKEINFO = @MAKEINFO@
+NM = @NM@
+PACKAGE = @PACKAGE@
+PACKAGE_VERSION = @PACKAGE_VERSION@
+RANLIB = @RANLIB@
+README_ALPHA = @README_ALPHA@
+SOVERSION = @SOVERSION@
+TAR = @TAR@
+VERSION = @VERSION@
+
+libconf_la_SOURCES= cl_alist.c cl_assign.c cl_clearconf.c cl_closeconf.c \
+	cl_find_var.c cl_free_unk.c cl_gcstanza.c cl_getconf.c cl_getstanza.c \
+	cl_getvers.c cl_in_array.c cl_in_warray.c cl_lib.c cl_macro.c \
+	cl_openconf.c cl_put_one.c cl_putstanza.c cl_setvar.c \
+	cl_tinterp.c cl_unalias.c \
+	cl_warning.c cl_writeconf.c \
+	strcasecmp.c strdup.c strncasecmp.c strtol.c wildmat.c cl_strtol.c
+lib_LTLIBRARIES = libconf.la
+libconf_la_LDFLAGS = -version-info @SOVERSION@ -rpath $(libdir)
+
+noinst_HEADERS=intern.h ownstd.h cl_strtol.h
+noinst_PROGRAMS=libtest
+libtest_LDADD=./libconf.la
+libtest_DEPENDENCIES=./libconf.la
+include_HEADERS=conflib.h tinterp.h
+EXTRA_DIST=.cvsignore
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+LTLIBRARIES =  $(lib_LTLIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+libconf_la_LIBADD = 
+libconf_la_OBJECTS =  cl_alist.lo cl_assign.lo cl_clearconf.lo \
+cl_closeconf.lo cl_find_var.lo cl_free_unk.lo cl_gcstanza.lo \
+cl_getconf.lo cl_getstanza.lo cl_getvers.lo cl_in_array.lo \
+cl_in_warray.lo cl_lib.lo cl_macro.lo cl_openconf.lo cl_put_one.lo \
+cl_putstanza.lo cl_setvar.lo cl_tinterp.lo cl_unalias.lo cl_warning.lo \
+cl_writeconf.lo strcasecmp.lo strdup.lo strncasecmp.lo strtol.lo \
+wildmat.lo cl_strtol.lo
+PROGRAMS =  $(noinst_PROGRAMS)
+
+libtest_SOURCES = libtest.c
+libtest_OBJECTS =  libtest.o
+libtest_LDFLAGS = 
+CFLAGS = @CFLAGS@
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+LINK = $(LIBTOOL) --mode=link $(CC) $(CFLAGS) $(LDFLAGS) -o $@
+HEADERS =  $(include_HEADERS) $(noinst_HEADERS)
+
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+GZIP = --best
+SOURCES = $(libconf_la_SOURCES) libtest.c
+OBJECTS = $(libconf_la_OBJECTS) libtest.o
+
+all: Makefile $(LTLIBRARIES) $(PROGRAMS) $(HEADERS)
+
+.SUFFIXES:
+.SUFFIXES: .S .c .lo .o .s
+$(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4)
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps src/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-libLTLIBRARIES:
+
+clean-libLTLIBRARIES:
+	-test -z "$(lib_LTLIBRARIES)" || rm -f $(lib_LTLIBRARIES)
+
+distclean-libLTLIBRARIES:
+
+maintainer-clean-libLTLIBRARIES:
+
+install-libLTLIBRARIES: $(lib_LTLIBRARIES)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(libdir)
+	@list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "$(LIBTOOL)  --mode=install $(INSTALL_DATA) $$p $(DESTDIR)$(libdir)/$$p"; \
+	    $(LIBTOOL)  --mode=install $(INSTALL_DATA) $$p $(DESTDIR)$(libdir)/$$p; \
+	  else :; fi; \
+	done
+
+uninstall-libLTLIBRARIES:
+	@$(NORMAL_UNINSTALL)
+	list='$(lib_LTLIBRARIES)'; for p in $$list; do \
+	  $(LIBTOOL)  --mode=uninstall rm -f $(DESTDIR)$(libdir)/$$p; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+.c.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.s.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+.S.lo:
+	$(LIBTOOL) --mode=compile $(COMPILE) -c $<
+
+mostlyclean-libtool:
+	-rm -f *.lo
+
+clean-libtool:
+	-rm -rf .libs _libs
+
+distclean-libtool:
+
+maintainer-clean-libtool:
+
+libconf.la: $(libconf_la_OBJECTS) $(libconf_la_DEPENDENCIES)
+	$(LINK) -rpath $(libdir) $(libconf_la_LDFLAGS) $(libconf_la_OBJECTS) $(libconf_la_LIBADD) $(LIBS)
+
+mostlyclean-noinstPROGRAMS:
+
+clean-noinstPROGRAMS:
+	-test -z "$(noinst_PROGRAMS)" || rm -f $(noinst_PROGRAMS)
+
+distclean-noinstPROGRAMS:
+
+maintainer-clean-noinstPROGRAMS:
+
+libtest: $(libtest_OBJECTS) $(libtest_DEPENDENCIES)
+	@rm -f libtest
+	$(LINK) $(libtest_LDFLAGS) $(libtest_OBJECTS) $(libtest_LDADD) $(LIBS)
+
+install-includeHEADERS: $(include_HEADERS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(includedir)
+	@list='$(include_HEADERS)'; for p in $$list; do \
+	  if test -f "$$p"; then d= ; else d="$(srcdir)/"; fi; \
+	  echo " $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/$$p"; \
+	  $(INSTALL_DATA) $$d$$p $(DESTDIR)$(includedir)/$$p; \
+	done
+
+uninstall-includeHEADERS:
+	@$(NORMAL_UNINSTALL)
+	list='$(include_HEADERS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(includedir)/$$p; \
+	done
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $(SOURCES) $(HEADERS) $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = src
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  test -f $(distdir)/$$file \
+	  || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	  || cp -p $$d/$$file $(distdir)/$$file; \
+	done
+cl_alist.lo cl_alist.o: cl_alist.c ownstd.h ../config.h conflib.h \
+	intern.h
+cl_assign.lo cl_assign.o: cl_assign.c ownstd.h ../config.h conflib.h \
+	intern.h tinterp.h cl_strtol.h
+cl_clearconf.lo cl_clearconf.o: cl_clearconf.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_closeconf.lo cl_closeconf.o: cl_closeconf.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_find_var.lo cl_find_var.o: cl_find_var.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_free_unk.lo cl_free_unk.o: cl_free_unk.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_gcstanza.lo cl_gcstanza.o: cl_gcstanza.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_getconf.lo cl_getconf.o: cl_getconf.c ownstd.h ../config.h conflib.h \
+	intern.h
+cl_getstanza.lo cl_getstanza.o: cl_getstanza.c ownstd.h ../config.h \
+	conflib.h intern.h tinterp.h cl_strtol.h
+cl_getvers.lo cl_getvers.o: cl_getvers.c ownstd.h ../config.h conflib.h
+cl_in_array.lo cl_in_array.o: cl_in_array.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_in_warray.lo cl_in_warray.o: cl_in_warray.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_lib.lo cl_lib.o: cl_lib.c ownstd.h ../config.h conflib.h intern.h
+cl_macro.lo cl_macro.o: cl_macro.c ownstd.h ../config.h tinterp.h \
+	conflib.h
+cl_openconf.lo cl_openconf.o: cl_openconf.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_put_one.lo cl_put_one.o: cl_put_one.c ownstd.h ../config.h conflib.h \
+	intern.h
+cl_putstanza.lo cl_putstanza.o: cl_putstanza.c ownstd.h ../config.h \
+	conflib.h intern.h
+cl_setvar.lo cl_setvar.o: cl_setvar.c ownstd.h ../config.h conflib.h \
+	intern.h tinterp.h
+cl_strtol.lo cl_strtol.o: cl_strtol.c ../config.h cl_strtol.h
+cl_tinterp.lo cl_tinterp.o: cl_tinterp.c ownstd.h ../config.h tinterp.h
+cl_unalias.lo cl_unalias.o: cl_unalias.c ownstd.h ../config.h conflib.h \
+	intern.h
+cl_warning.lo cl_warning.o: cl_warning.c ownstd.h ../config.h conflib.h \
+	intern.h
+cl_writeconf.lo cl_writeconf.o: cl_writeconf.c ownstd.h ../config.h \
+	conflib.h intern.h
+libtest.o: libtest.c ownstd.h ../config.h conflib.h tinterp.h
+strcasecmp.lo strcasecmp.o: strcasecmp.c ../config.h
+strdup.lo strdup.o: strdup.c ownstd.h ../config.h
+strncasecmp.lo strncasecmp.o: strncasecmp.c ../config.h
+strtol.lo strtol.o: strtol.c ../config.h
+wildmat.lo wildmat.o: wildmat.c ownstd.h ../config.h
+
+info:
+dvi:
+check: all
+	$(MAKE)
+installcheck:
+install-exec: install-libLTLIBRARIES
+	@$(NORMAL_INSTALL)
+
+install-data: install-includeHEADERS
+	@$(NORMAL_INSTALL)
+
+install: install-exec install-data all
+	@:
+
+uninstall: uninstall-libLTLIBRARIES uninstall-includeHEADERS
+
+install-strip:
+	$(MAKE) INSTALL_PROGRAM='$(INSTALL_PROGRAM) -s' INSTALL_SCRIPT='$(INSTALL_PROGRAM)' install
+installdirs:
+	$(mkinstalldirs)  $(DATADIR)$(libdir) $(DATADIR)$(includedir)
+
+
+mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -f $(MOSTLYCLEANFILES)
+
+clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	-rm -f Makefile $(DISTCLEANFILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
+
+maintainer-clean-generic:
+	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
+mostlyclean:  mostlyclean-libLTLIBRARIES mostlyclean-compile \
+		mostlyclean-libtool mostlyclean-noinstPROGRAMS \
+		mostlyclean-tags mostlyclean-generic
+
+clean:  clean-libLTLIBRARIES clean-compile clean-libtool \
+		clean-noinstPROGRAMS clean-tags clean-generic \
+		mostlyclean
+
+distclean:  distclean-libLTLIBRARIES distclean-compile distclean-libtool \
+		distclean-noinstPROGRAMS distclean-tags \
+		distclean-generic clean
+	-rm -f config.status
+	-rm -f libtool
+
+maintainer-clean:  maintainer-clean-libLTLIBRARIES \
+		maintainer-clean-compile maintainer-clean-libtool \
+		maintainer-clean-noinstPROGRAMS maintainer-clean-tags \
+		maintainer-clean-generic distclean
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+.PHONY: mostlyclean-libLTLIBRARIES distclean-libLTLIBRARIES \
+clean-libLTLIBRARIES maintainer-clean-libLTLIBRARIES \
+uninstall-libLTLIBRARIES install-libLTLIBRARIES mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile \
+mostlyclean-libtool distclean-libtool clean-libtool \
+maintainer-clean-libtool mostlyclean-noinstPROGRAMS \
+distclean-noinstPROGRAMS clean-noinstPROGRAMS \
+maintainer-clean-noinstPROGRAMS uninstall-includeHEADERS \
+install-includeHEADERS tags mostlyclean-tags distclean-tags clean-tags \
+maintainer-clean-tags distdir info dvi installcheck install-exec \
+install-data install uninstall all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

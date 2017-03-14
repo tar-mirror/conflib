@@ -1,0 +1,969 @@
+This is Info file conflib.info, produced by Makeinfo version 1.68 from
+the input file conflib.texi.
+
+START-INFO-DIR-ENTRY
+* Conflib: (conflib.info).         Configuration File Handling
+END-INFO-DIR-ENTRY
+
+   This file documents `conflib', a runtime configuration library for
+programs written in C.
+
+   Copyright (C) 1993, 1994, 1995, 1996, 1997, 1998 by Uwe Ohse
+
+   Permission is granted to make and distribute verbatim copies of this
+manual provided the copyright notice and this permission notice are
+preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided that
+the entire resulting derived work is distributed under the terms of a
+permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that this permission notice may be stated in a
+translation approved by Uwe Ohse.
+
+
+File: conflib.info,  Node: easy reading,  Next: open and close,  Prev: configuration table,  Up: programming
+
+A High Level Interface
+======================
+
+ - Function: int cl_getconf (const char *FNAME, cl_var_t *CONFTAB)
+     Reads the whole configuration file FNAME into CONFTAB.
+
+     This function is identical with calling
+     `cl_getconfstanza(FNAME,CONFTAB,0)'.
+
+     Returns 0 if successful, and other values if not.
+
+ - Function: int cl_getconfstanza (const char *FNAME, cl_var_t
+          *CONFTAB, const char *stanza)
+     cl_getconfstanza reads the stanza STANZA from the configuration
+     file FNAME into CONFTAB. If STANZA is `NULL' then the whole
+     configuration file is read.
+
+     Returns 0 if successful and other values if not.
+
+
+File: conflib.info,  Node: open and close,  Next: reading and writing,  Prev: easy reading,  Up: programming
+
+Opening and closing a configuration file
+========================================
+
+ - Function: cl_file_t cl_openconf (const char *FNAME, const char *MODE)
+     Open the configuration file FNAME for reading (MODE == `r') or
+     writing (MODE == `r').  The normal return value is the handle
+     needed to access FNAME with other `conflib'-functions.
+
+     n the case of an error, a value of `NULL' is returned instead. In
+     addition to the usual file open errors (*note opening a file
+     descriptor: (libc)Opening and Closing Files.), the following
+     `errno' error conditions are defined for this function:
+
+    `ENOMEM'
+          no more memory available.
+
+    `EINVAL'
+          MODE is not equal to `r' or `w'.
+
+
+ - Function: void cl_openconf (cl_file_t *HADLE)
+     Closes the configurations file with the handle HANDLE and frees
+     all resources of HANDLE (this means that you really should not
+     access HANDLE and its data any longer).
+
+
+File: conflib.info,  Node: reading and writing,  Next: analyzing,  Prev: open and close,  Up: programming
+
+Reading and writing
+===================
+
+ - Function: int cl_getstanza (cl_file_t *HANDLE, cl_var_t *TAB, const
+          char *varstanza,
+     			  long FLAGS, cl_ulist_t ** UNKNOWNS)
+
+     cl_getstanza reads the stanza STANZA (or all stanzas, if STANZA is
+     `NULL') from the already opened configuration file pointed to by
+     HANDLE into TAB.
+
+     FLAGS is a bitfield consisting of the following bits:
+    *CL_GET_NOINCLUDE
+          If this bit is set `include'- and `includestanza'-statements
+          in HANDLE will be ignored.
+
+     If UNKNOWNS is not `NULL' then the pointer it points to will be
+     the start of a list of unknown variables (basically this are
+     variables set in the stanza which are not found in TAB).  The list
+     is dynamically allocated, use `cl_free_unknowns' to deallocate the
+     memory. *Note cl_free_unknowns: cleaning up.
+
+     This function returns 0 if successful and some other value if not.
+
+ - Function: int cl_file_t (cl_file_t *HANDLE, cl_var_t *TAB, const
+          char *STANZA,
+     	long FLAGS, cl_ulist_t *UNKNOWNS)
+
+     `cl_putstanza' writes TAB to the configuration file HANDLE into
+     the stanza STANZA. It tries hard to do the right thing (especially
+     it preserves any variables found in the it doesn't know about).
+
+     But there a things `cl_putstanza' can or will not handle:
+
+        * `include'- and `includestanza'-statements are ignored (it
+          would be hard to do that right, and i don't see a really good
+          reason for it).
+
+        * Variables in TAB without the `CL_MAY_SAVE' flag set will not
+          be saved (this means: if you want to save all variables all
+          variables need that flag). If the variable is already found
+          in the stanza STANZA it will be preserved (this means: it's
+          not enough to leave out the `CL_MA_SAVE' flag to delete a
+          variable. In fact it's impossible to delete a variable at this
+          time).
+
+     All variables in UNKNOWNS will be saved.
+
+     To state it clearly: At the moment there is no way to remove a
+     variable from the configuration file.
+
+     Returns 0 if successful, other values is unsuccessful.
+
+ - Function: void cl_writeconf (FILE *FILE,const cl_var_t *TAB)
+     This function may be used to dump a programs configuration to file
+     FILE. It should not be used to overwrite a configuration file.
+
+
+File: conflib.info,  Node: analyzing,  Next: searching,  Prev: reading and writing,  Up: programming
+
+Analyzing a configuration file
+==============================
+
+ - Function: char ** cl_build_stanza_array (const char *PATTERN,
+          cl_file_t *varfile)
+     Generates an array containing the names of all stanzas matching
+     PATTERN in the configuration file FILE. The last element is a
+     `NULL' pointer.
+
+     PATTERN must not be a `NULL' pointer. Use `*' instead.
+
+     This function returns the array or `NULL' if an error occured.
+
+     If no stanza name matches PATTERN the function returns an empty
+     array with the first element beeing the `NULL' pointer.
+
+ - Function: void cl_delete_stanza_array (char **ARRAY)
+     Frees all memory used by ARRAY and its elements.  Sets *ARRAY to
+     `NULL'.
+
+   An example, with error handling left out:
+
+     cl_file_t *f;
+     char **ar;
+     f=cl_openconf("something.cnf","r");
+     ar=cl_build_stanza_array("*",f);
+     if (*ar) {
+         char **p;
+     	for (p=ar;*p;p++)
+     	    puts(*p);
+     }
+     cl_closeconf(f);
+     cl_delete_stanza_array(ar);
+
+
+
+File: conflib.info,  Node: searching,  Next: cleaning up,  Prev: analyzing,  Up: programming
+
+Searching functions
+===================
+
+ - Function: cl_var_t * cl_find_confvar (cl_var_t *TAB, const char
+          *NAME)
+     This functions searches the array TAB for the variable called NAME
+     and returnes a pointer to the array element containing NAME, or
+     `NULL' if NAME is not found.
+
+   The following two functions search conflib array. They are here for
+compatability only, i'm thinking about a better interface.
+
+ - Function: int cl_isinarray (const char **Array, const char *St, int
+          insensitive)
+     cl_isinarray searches the elements of array ARRAY for a string
+     equal to ST. If INSENSITIVE is not zero then the string
+     comparision is caseinsensitive.
+
+     The function returns 0 if ST found and one otherwise.
+
+ - Function: int cl_isinwarray (const char **Array, const char *St)
+     cl_isinarray searches the elements of array ARRAY for a string
+     matching ST. This function uses wildcard comparision (with ST
+     being the pattern) and works casesensitive).
+
+     The function returns 0 if ST found and one otherwise.
+
+
+File: conflib.info,  Node: cleaning up,  Next: misc functions,  Prev: searching,  Up: programming
+
+Cleaning up
+===========
+
+ - Function: void cl_clearconf cl_var_t *TAB
+     cl_clearconf walks through TAB and
+
+        * sets all numeric variables to 0.
+
+        * sets boolean variables to FALSE.
+
+        * frees all array contents.
+
+        * frees all dynamically allocted memory (the values of all
+          variables and all lists which have the `CL_MALLOCED' flag
+          set).
+
+ - Function: void cl_free_unknowns cl_ulist_t *LIST
+     cl_free_unknowns frees all memory allocated to the list LIST,
+     which should be a list of unknown variables created from
+     `cl_getstanza'. *Note cl_getstanza: reading and writing.
+
+
+File: conflib.info,  Node: misc functions,  Next: unknown variables,  Prev: cleaning up,  Up: programming
+
+Miscellaneous functions
+=======================
+
+ - Function: int cl_getversion (void)
+     cl_getversion returns an integer representing the version number of
+     the library. It's 10000 * major + 100 * minor + patchlevel.
+
+ - Function: cl_var_t * cl_unalias (cl_file_f *FILE, cl_var_t *TAB,
+          cl_var_t *ENTRY)
+     This function follows an alias chain until it finds an entry in TAB
+     which is not an alias, and returns it's address.
+
+     FILE is needed for error messages.
+
+     ENTRY is the initial variable. If it is not an alias this function
+     returns ENTRY.
+
+     cl_unalias returns `NULL' in case of any error.
+
+ - Function: int cl_setvar (cl_var_t *TAB, char *ZEILE, long FLAGS,
+     cl_ulist_t ** UNKNOWNS)
+
+     cl_setvar works as if ZEILE was a line in a configuration file. It
+     looks in TAB for the variable name.
+
+     FLAGS is a bitfield consisting of the following bits:
+    *CL_GET_NOINCLUDE
+          If this bit is set `include'- and `includestanza'-statements
+          in HANDLE will be ignored.
+
+     If UNKNOWNS is not `NULL' then the pointer it points to will be
+     the start of a list of unknown variables (basically this are
+     variables set in the stanza which are not found in TAB).  The list
+     is dynamically allocated, use `cl_free_unknowns' to deallocate the
+     memory. *Note cl_free_unknowns: cleaning up.
+
+     This function returns 0 if successful and some other value if not.
+
+
+File: conflib.info,  Node: unknown variables,  Next: limits,  Prev: misc functions,  Up: programming
+
+Handling Of Unknown Variables
+=============================
+
+   There may be unknown variables used in the configuration file your
+program doesn't know about. In many cases the best solution is to
+ignore them - your program doesn't know what to do with them, and other
+program might need them (this might happen if configuration files or
+stanzas are shared between applications).  So the default behaviour if
+to ignore them - cl_getstanza will not read them, and cl_putstanza will
+leave them in.
+
+   But there are situations you want to know them. Think of a generic
+configuration file editor - it *has* to handle them.
+
+   First the good news: cl_getstanza and cl_putstanza can handle
+unknown variables. The bad news: The solution is not beautiful (but i
+haven't found a better one).
+
+   This data type describes an unknown variable:
+
+ - Data Type: cl_ulist_t
+     The `cl_ulist_t' data structure is used to hold information about
+     an unknown variable variable. At the time i write this down it has
+     the following members:
+
+    *char *varname
+          the name of the variable
+
+    *char *inhalt
+          the value
+
+    *struct cl_ulist_t *next
+          a pointer to the next unknown variable.
+
+
+   You may use this data type as parameter for cl_getstanza and
+cl_putstanza like this (error handling left out):
+
+     cl_ulist_t *unknowns=NULL;
+     cl_ulist_t *ptr=NULL;
+     extern cl_var_t *tab;
+     extern cl_file_t *handle;
+     cl_getstanza(handle,tab,"stanza25,0,&unknowns);
+     for (ptr=unknowns;ptr!=NULL;ptr=ptr->next) {
+         printf("%s=%s\n",ptr->varname,ptr->inhalt);
+         /* do something else */
+     }
+     cl_putstanza(handle,tab,"stanza25",0,&unknowns);
+     cl_free_unknowns(unknowns);
+
+   For more information see *Note cl_getstanza: reading and writing,
+*Note cl_putstanza: reading and writing, and *Note cl_free_unknowns:
+cleaning up.
+
+
+File: conflib.info,  Node: limits,  Prev: unknown variables,  Up: programming
+
+Limitations
+===========
+
+   the library has some limits:
+
+`KT_MAXARRAY'
+     limits the maximal number of array elements. It's currently 256 and
+     can be changed in conflib.h (but think again before doing so - a
+     better solution is a new data type which allocates the array
+     dynamically).  The last element, the NULL element, counts as used,
+     so an array has 255 usable elements maximal (but that should be
+     enough for the very most purposes).
+
+`1023'
+     is the maximal length of a line in a configuration file. Splitted
+     lines (the ones with a backslash at the end) count as one line.
+     It's not too hard to make that dynamic, have a look into
+     getgcstanza.c.
+
+`CL_PREENV'
+`CL_POSTENV'
+     are only used for simple data types. This are:
+
+       1. CL_NUM
+
+       2. CL_NUMSHORT
+
+       3. CL_BOOLEAN
+
+       4. CL_STRING
+
+
+File: conflib.info,  Node: Ersetzung,  Next: todo,  Prev: programming,  Up: Top
+
+Textinterpretation und -Ersetzung
+*********************************
+
+* Menu:
+
+* $-Ersetzung::           Ersetzung durch EnvironmentvariablenA
+* C-Escapesequenzen::     C-aehnliche Escapesequenzen
+* ~-Ersetzung::           Heimatverzeichnisse
+* Bedingungen::           Bedingte Textersetzung
+* Einbindung::            Benutzung der Routinen in eigenen Programmen
+
+
+File: conflib.info,  Node: $-Ersetzung,  Next: C-Escapesequenzen,  Prev: Ersetzung,  Up: Ersetzung
+
+Ersetzung durch Environmentvariablen
+====================================
+
+$NAME
+     Die Zeichenkette wird durch den Inhalt der Environmentvariablen
+     `NAME' ersetzt. Der Bezeichner `NAME' darf dabei nur aus
+     Buchstaben, Ziffern und Unterstrichen bestehen.
+
+     Ist die Environmentvariable `name' nicht gesetzt, wird ein
+     Leerstring eingesetzt.
+
+$(NAME)
+     Wie oben, mit der Ausnahme, dass der Bezeichner `NAME' auch
+     Sonderzeichen mit Ausnahme der geschlossenen Klammer enthalten
+     darf.
+
+
+File: conflib.info,  Node: C-Escapesequenzen,  Next: ~-Ersetzung,  Prev: $-Ersetzung,  Up: Ersetzung
+
+C-aehnliche Escapesequenzen
+===========================
+
+`\0[0-7]+'
+     Ein Backslashs, gefolgt von einer oktalen Zahl (die mit einer 0 zu
+     beginnen hat) wird durch das ASCII-Zeichen ersetzt, dessen
+     Wertigkeit der Zahl entspricht.  `\0101' wird durch das Zeichen
+     `A' ersetzt.
+
+`\0x[0-9a-fA-F]+'
+     Ein Backslashs, gefolgt von ieiner `0', einem `x' und hexadezimalen
+     Zahlen, wird durch das ASCII-Zeichen ersetzt, dessen Wertigkeit
+     der Zahl entspricht.  `0\x42' wird durch das Zeichen `B' ersetzt.
+
+`\[1-9][0-9]+'
+     Ein Backslash, gefolgt von einer Ziffer zwischen `1' und `9'
+     einschliesslich, sowie optional weiteren Ziffern von `0' bis `9',
+     wird durch das ASCII-Zeichen ersetzt, dessen Wertigkeit der Zahl
+     entspricht.  `\67' wird durch das Zeichen `C' ersetzt.
+
+`\\'
+     wird durch einen einzelnen Backslash (`\') ersetzt
+
+`\a'
+     wird durch das Zeichen ersetzt, bei dessen Ausgabe auf ein Terminal
+     ein Ton erklingt (im Klartext: Dies ist das Glockenzeichen, die
+     Bell).
+
+`\b'
+     wird durch ein Backspace ersetzt.
+
+`\f'
+     wird durch ein Formfeed ersetzt.
+
+`\n'
+     wird durch einen Zeilenvorschub ersetzt.
+
+`\r'
+     wird durch ein `CR', einen Wagenruecklauf ersetzt.
+
+`\t'
+     wird durch einen horizontalen Tabulator ersetzt.
+
+`\v'
+     wird durch einen vertikalen Tabulator ersetzt.
+
+`\$'
+     wird durch ein Dollarzeichen (`$') ersetzt.
+
+`\~'
+     wird durch eine Tilde (`~') ersetzt.
+
+
+File: conflib.info,  Node: ~-Ersetzung,  Next: Bedingungen,  Prev: C-Escapesequenzen,  Up: Ersetzung
+
+Ersetzung durch Heimatverzeichnisse
+===================================
+
+~
+     wird durch das Heimatverzeichnis des Benutzers ersetzt.
+
+          Wenn das Heimatverzeichnis `/home/uwe' ist, dann wird
+          `~' durch `/home/uwe' ersetzt.
+
+~NAME
+     Der Ausdruck wird durch das Heimatverzeichnis des Benutzers mit
+     dem Namen `name' ersetzt.
+
+          `~uwe' wird durch `/home/uwe' ersetzt.
+
+~(NAME)
+     Der Ausdruck wird durch das Heimatverzeichnis des Benutzers mit
+     dem Namen `name' ersetzt. Diese Version ist vorzuziehen, wenn
+     `name' Sonderzeichen enthaelt oder sich direkt daran weitere
+     Zeichen oder Buchstaben anschliessen.
+
+          `~(uwe)/tmp' wird durch `/home/uwe/tmp' ersetzt.
+
+~~
+     wird durch eine Tilde (`~') ersetzt.
+
+
+File: conflib.info,  Node: Bedingungen,  Next: Einbindung,  Prev: ~-Ersetzung,  Up: Ersetzung
+
+Bedingte Textersetzung
+======================
+
+   Das `$['-Konstrukt ermoeglicht eine Textersetzung in Abhaengigkeit
+vom Ergebnis einer Bedingung. Die Syntax ist:
+
+         $[bedingung?was-wenn-wahr:was-wenn-falsch]
+     Der `else'-Teil der Bedingung darf weggelassen werden:
+         $[bedingung?was-wenn-wahr]
+
+   `bedingung' kann sein:
+
+*something==something-else
+     Das Ergebnis der Bedingung ist wahr, wenn die
+     Interpretationsergebnisse von `something' und `something-else'
+     gleich sind.
+
+*something!=something-else
+     Das Ergebnis der Bedingung ist wahr, wenn die
+     Interpretationsergebnisse von `something' und `something-else'
+     ungleich sind.
+
+*something
+     In diesem Fall ist die Bedingung wahr, wenn das
+     Interpretationsergebnis von `something' nicht leer ist.
+
+   Der Term in den eckigen Klammern wird erst in seine Einzelteile
+zerlegt, dann erst werden die notwendigen Interpretationen ausgefuehrt.
+Nicht notwendige Interpretationen (zum Beispiel der `else'-Teil einer
+wahren Bedinungen) werden nicht durchgefuehrt.
+
+
+File: conflib.info,  Node: Einbindung,  Prev: Bedingungen,  Up: Ersetzung
+
+Einbindung der Textersetzungsroutinen in eigenen Programmen
+===========================================================
+
+   Der Einsatz der Library erfordert nur geringe Aenderungen am
+Programm:
+
+   * tip_interpret muß an passenden Programmstellen aufgerufen werden.
+     Siehe *Note tip_interpret::.
+
+   * Eine Tabelle mit den zu beruecksichtigenden Interpretationsroutinen
+     muss aufgestellt werden.
+
+   * Falls zusaetzliche Ersatzroutinen zur Verfuegung gestellt werden
+     sollen, muessen diese programmiert werden.
+
+   * Die Library muss durch Aufruf der Funktion tip_init initialisiert
+     werden. Siehe *Note tip_init:: fuer weitere Informationen.
+
+   * Und sie muss durch den Aufruf von tip_deinit deinitialisiert
+     werden.  Siehe *Note tip_init::.
+
+* Menu:
+
+* tip_interpret::              Textersetzung in einem String durchfuehren
+* tip_fn_t::                   Textersetzungssubroutinen
+* Standardroutinen::           Standardersatzroutinen der Library
+* Makros::                     Makros definieren und loeschen
+* tip_init::                   (De-)Initialisierung der Library
+* tip_beispiel::               Ein Beispiel fuer den Einsatz der Routine
+
+
+File: conflib.info,  Node: tip_interpret,  Next: tip_fn_t,  Prev: Einbindung,  Up: Einbindung
+
+Durchfuehrung der Ersetzung
+---------------------------
+
+   Die Textersetzung wird durch die Routine tip_interpret durchgefuehrt:
+
+ - Function: size_t tip_interpret
+     (tip_t *TAB, const char *FORMAT,     char *TO, size_t MAXLEN)
+
+     Die Funktion fuehrt die Ersetzung durch. Sie durchsucht den String
+     FORMAT zeichenweise. Falls das Zeichen einem MAGIC der Tabelle
+     entspricht oder die nächsten Zeichen einem der `magicstrings' in
+     der Tabelle entsprechen, wird die assozierte Routine TAB->INTERP
+     aufgerufen. Falls TAB->INTERP nicht zustaendig ist (`TIP_NOTDONE'
+     zurueckliefert), wird die Tabelle weiter durchsucht.
+
+     `tip_interpret' liefert die die Anzahl der geschriebenen Zeichen
+     ohne das abschliessende `'\0'', also `strlen(to)', oder
+     `TIP_ERROR', falls ein Fehler auftrat, zurueck.
+
+   Die tip_interpret zu uebergebende Tabelle TAB wird durch ein Element
+beendet, dessen `magic' `'\0'' und dessen `magicstring' `NULL' ist. Der
+Datentyp ist definiert als:
+
+ - Datentyp: tip_t
+          typedef struct
+          {
+              char magicchar;
+              const char *magicstring;
+              size_t magiclen;
+              tip_fn_t interp;
+          } tip_t;
+
+   Die Routine `interp' wird aufgerufen, falls:
+
+  1. `magicchar' ungleich '\0' und das nächste Zeichen im zu
+     interpretierenden Text gleich `magicchar' ist, oder
+
+  2. `magicstring' ungleich `NULL' ist und die nächsten `magiclen'
+     Zeichen im zu interpretierenden Text gleich `magicstring' sind.
+
+   `interp' wird unter *Note tip_fn_t:: beschrieben.
+
+   `tip_t' wird niemals einzeln verwendet, sondern immer nur als Array,
+dessen letztes Element als MAGIC ein `'\0'' hat und dessen
+`magicstring' `NULL' ist.
+
+ - Function: char *tip_ainterpret
+     (tip_t *TAB, const char *FORMAT)
+
+     Die Funktion arbeitet wie tip_interpret, alloziert aber den
+     Speicherbereich für das Ergebnis selbst. Das verwendete Verfahren
+     führt unter Umständen dazu, daß einzelne Interpretationen mehrfach
+     durchgeführt werden.
+
+
+File: conflib.info,  Node: tip_fn_t,  Next: Standardroutinen,  Prev: tip_interpret,  Up: Einbindung
+
+Ersetzungsunterroutinen: tip_fn_t
+---------------------------------
+
+ - Function: size_t tip_function
+     (const char *THIS, const char **NEXT,     char *TO, size_t MAXLEN)
+
+     Die Funktion wird aufgerufen, wenn tip_interpret (siehe *Note
+     tip_interpret::) im FORMAT-String ein oder mehrere Zeichen fand,
+     die der `tip_function' in der Tabelle TAB zugeordnet wurden. Sie
+     erhaelt folgende Parameter:
+
+    THIS
+          zeigt auf das MAGIC im Formatstring.
+
+    NEXT
+          muss auf das naechste zu verarbeitende Zeichen im
+          Eingabestring gesetzt werden, wenn `tip_function' eine
+          Ersetzung durchfuehren konnte.
+
+    TO
+          Ab dieser Position soll das Ergebnis abgelegt werden.
+
+    MAXLEN
+          Maximale Groesse des Ergebnisstrings. Bei Ueberschreitung ist
+          TIP_ERROR zurueckzuliefern.
+
+     Returncodes:
+    *TIP_NOTDONE
+          Die Funktion ist nicht aktiv geworden. tip_interpret soll
+          versuchen, andere Routinen zu finden.
+
+    *TIP_ERROR
+          Ein Fehler ist aufgetreten, tip_interpret soll abbrechen.
+
+    *Zahl
+          Die Laenge des aus der Ersetzung hervorgegangenen Strings
+          ohne die abschliessende 0.
+
+     Wird eine Ersetzung durchgefuehrt, ist der String mit einer 0
+     abzuschliessen.
+
+
+File: conflib.info,  Node: Standardroutinen,  Next: Makros,  Prev: tip_fn_t,  Up: Einbindung
+
+Standardersatzroutinen der Library
+----------------------------------
+
+   Folgende Ersatzroutinen enthaelt die Library:
+
+*tip_dollar
+     Ersetzung durch Environmentvariablen, erwartet als `magic' das
+     Zeichen `$'. Siehe *Note $-Ersetzung::.
+
+*tip_tilde
+     Ersetzung durch Heimatverzeichnisse. Siehe *Note ~-Ersetzung::
+     fuer eine Beschreibung der vorgenommenen Ersetzungen. Die Funktion
+     erwartet als `magic' das Zeichen `~'.
+
+     Bei Einsatz von tip_tilde ist Vorsicht geboten. Die Zugriffe auf
+     die Passwortdatei, die notwendig sind, um das Heimatverzeichnis
+     feststellen zu können, geschehen mit Hilfe der Funktionen
+     `getpwuid' und `getpwnam', und verstellen daher den Dateizeiger
+     saemtlicher `/etc/passwd' mit Hilfe der Routinen aus <pwd.h>
+     lesender oder schreibender Funktionen. Bei Aufruf von `tip_deinit'
+     wird `endpwent' aufgerufen, falls tip_tilde vorher aufgerufen
+     worden ist.
+
+*tip_backslash
+     Ersetzung durch C-aehnliche Escapesequenzen. Siehe *Note
+     C-Escapesequenzen:: fuer eine Aufstellung der verstandenen
+     Esacpecodes. Die Funktion erwartet als `magic' das Zeichen `\\'.
+
+*tip_conditional
+     Die Bedingungen sind dadurch realisiert. Siehe *Note Bedingungen::.
+     Als `magicstring' wird `$[' erwartet. Die Bedinungen muß außerdem
+     mit einem `]' abgeschlossen werden.
+
+*tip_strip
+     Eine Funktion, die ihren Parameterstring von führenden und
+     abschließenden Leerzeichen und Tabs befreit. Der Parameterstring
+     wird vor der Kürzung interpretiert.
+
+     Als `magicstring' wird `${strip ' erwartet. Der Ausdruck muß
+     außerdem mit einem `}' abgeschlossen werden.
+
+     Die Funktion kann als Beispiel für eigene Funktionen dienen.
+
+*tip_macro
+     Die Funktion setzt den Wert des ihr übergebenen Makros ein. Ist das
+     Makro nicht definiert, wird `undefined' eingesetzt. Der Ausdruck
+     muß mit einem `}' abgeschlossen werden.
+
+     Das Beispiel setzt den Inhalt des Makros `test' ein.
+          	${macro test}
+
+*tip_defmacro MACRONAME VALUE
+     Die Funktion setzt VALUE als Wert des Makros MACRONAME ein.  Der
+     Ausdruck muß mit einem `}' abgeschlossen werden. Fehlt VALUE, wird
+     ein leerer String als Wert eingesetzt.
+
+     Das Beispiel setzt das Makro `test' auf `hallo':
+          	${defmacro test hallo}
+
+     `tip_defmacro' ist über die Funktion `tip_defmacro_intern'
+     realisiert, siehe *Note Makros::.
+
+*tip_undefmacro MACRONAME
+     löscht den Wert des Makros mit dem Namen MACRONAME. Es ist kein
+     Fehler, wenn MACRONAME gar nicht definiert ist (sprich: man kann
+     ein Makro so oft löschen, wie man will).
+
+*tip_literal
+     Die Funktion setzt ihre Argumente ein, ohne sie zu interpretieren.
+     Der Ausdruck muß mit einem `}' abgeschlossen werden. Der Scanner,
+     der nach der abschliessenden Klammer sucht, ist recht empfindlich,
+     und verlangt, daß der Parameterstring der Syntax der
+     Interpretationsroutinen genügt.
+
+     Das Beispiel setzt einen einzelnen $ ein, ist also eine
+     aufwendigere Schreibweise für `\$':
+
+          	${literal %}
+
+*tip_force
+     Die Funktion interpretiert die Parameterstring zweimal.  Der
+     Ausdruck muß mit einem `}' abgeschlossen werden.
+
+     Das Beispiel zeigt, wie man aus vier Backslashs einen machen kann:
+
+     Das Beispiel setzt den Inhalt des Makros `test' ein.
+          	${force \\\\}
+
+
+File: conflib.info,  Node: Makros,  Next: tip_init,  Prev: Standardroutinen,  Up: Einbindung
+
+Definition und Nutzung von Makros
+---------------------------------
+
+   Makros dienen als Schreiberleichterung. Sie behalten ihren Inhalt
+bis sie gelöscht werden oder das Programm endet.
+
+   Es gibt zwei Arten, Makros einen Wert zuzuweisen:
+
+  1. tip_defmacro Diese Routine wird von `defmacro' aufgerufen, kann
+     also benutzt werden, um aus einer interpretierten Datei heraus
+     einen Makrowert zu setzen.
+
+  2. tip_defmacro_intern Diese Funktion kann aus C-Programmen benutzt
+     werden. `intern' bezieht sich darauf, daß ihr Aufruf in das
+     Programm eincodiert werden muß.
+
+   Es gibt zwei Arten, ein Makros zu löschen:
+  1. tip_undefmacro Diese Routine wird von der Interpretationsfunktion
+     `undefmacro' aufgerufen, kann also benutzt werden, um aus einer
+     interpretierten Datei heraus ein Makro zu löschen.
+
+  2. tip_defmacro_intern Erhält diese Funktion als Wert einen
+     Nullpointer übergeben, wird das Makro gelöscht.
+
+   Ein Makro kann auch einen leeren Wert haben.
+
+   Beide Arten, eine Makro zu definieren oder zu löschen sind identisch
+und arbeiten auf derselben Datenbasis.
+
+ - Function: char *tip_defmacro_intern
+     (const char *VARNAME, const char *VALUE)
+
+     Mit dieser Funktion kann man aus einem C-Programm heraus ein Makro
+     auf einen Wert setzen (VALUE != NULL) oder ein Makro löschen
+     (VALUE == NULL).
+
+
+File: conflib.info,  Node: tip_init,  Next: tip_beispiel,  Prev: Makros,  Up: Einbindung
+
+Initialisierung und Deinitialisierung der Library
+-------------------------------------------------
+
+ - Function: int tip_init()
+     Initialisiert die Library. Zur Zeit Dummyfunktion.  Liefert 0 bei
+     Erfolg, sonst einen Wert ungleich 0.
+
+ - Function: int tip_deinit()
+     Deinitialisiert die Library. Zur Zeit ruft sie nur `endpwent' auf,
+     und auch nur, falls tip_tilde eine der Routinen aus <pwd.h>
+     benutzt hat.  Liefert 0 bei Erfolg, sonst einen Wert ungleich 0.
+
+
+File: conflib.info,  Node: tip_beispiel,  Prev: tip_init,  Up: Einbindung
+
+Beispiel fuer den Einsatz der Routinen in eigenen Programmen
+------------------------------------------------------------
+
+     static size_t my_tip_prozent(const char *this, const char **next,
+         char *to, size_t maxlen);
+     
+     tip_t tab[]=
+     {
+     	{'$',tip_dollar},
+     	{'\\',tip_backslash},
+     	{'%',my_tip_prozent},
+     	{0,NULL},
+     };
+     
+     static void mylog(const char *format);
+     
+     static size_t my_tip_prozent(const char *this, const char **next,
+         char *to, size_t maxlen)
+     {
+     	char buf[128];
+     	time_t t;
+     	size_t l;
+     	switch(this[1])
+     	{
+     	case 't': /* %t -> Ausgabe von ctime() ohne \n */
+     		if (maxlen<25) /* strlen(ctime) */
+     			return TIP_ERROR;
+     		time(&t);
+     		strcpy(to,ctime(&t));
+     		*strchr(to,'\n')=0;
+     		return 24;
+     	case 'p': /* %p -> pid */
+     		sprintf(buf,"%ld",(long) getpid());
+     		l=strlen(buf);
+     		if (l+1>maxlen)
+     			return TIP_ERROR;
+     		strcpy(to,buf);
+     		return l;
+     	}
+     	return TIP_NOTDONE;
+     };
+     
+     extern FILE *logfile;
+     
+     static void mylog(const char *format)
+     {
+     	char buf[4096];
+     	if (tip_interpret(tab,format,buf,sizeof(buf))!=TIP_ERROR)
+     		fprintf(logfile,"%s\n",buf);
+     }
+
+
+File: conflib.info,  Node: todo,  Next: Index,  Prev: Ersetzung,  Up: Top
+
+Problems And Missing Features
+*****************************
+
+*getpwent etc are used.
+
+*the array handling is broken
+     the library should allocate the needed place for the array.
+
+*array search functions are broken
+     cl_isinwarray and cl_isinarray should be one function. They should
+     not return 1, but either an index of the found string or a pointer
+     to its address.
+
+     cl_isinwarray should have an option to match caseinsensitive
+
+*variable deletion impossible
+     it's not possible to delete a variable with cl_putconf().
+
+*lines a limited to 1024 chars
+     the maximal line length is limited to 1024 characters. It should
+     not be to hard to change this, but ... have a look into
+     cl_getstanza.c.
+
+
+File: conflib.info,  Node: Index,  Prev: todo,  Up: Top
+
+Konzepte
+********
+
+* Menu:
+
+* $-Ersetzung:                           $-Ersetzung.
+* *tip_ainterpret:                       tip_interpret.
+* *tip_defmacro_intern:                  Makros.
+* <pwd.h>:                               Standardroutinen.
+* Alias:                                 alias.
+* bitfields table:                       bitfields.
+* block:                                 stanzas.
+* blurb:                                 overview.
+* boolean variables:                     variables.
+* bugs:                                  todo.
+* C-Escapesequenzen:                     C-Escapesequenzen.
+* CL_ALIAS:                              alias.
+* cl_build_stanza_array:                 analyzing.
+* cl_clearconf:                          cleaning up.
+* cl_delete_stanza_array:                analyzing.
+* CL_ENUM:                               enumerations.
+* cl_enum_t:                             enumerations.
+* cl_file_t <1>:                         reading and writing.
+* cl_file_t:                             configfile handle.
+* cl_find_confvar:                       searching.
+* cl_free_unknowns:                      cleaning up.
+* cl_getconf:                            easy reading.
+* cl_getconfstanza:                      easy reading.
+* cl_getstanza:                          reading and writing.
+* cl_getversion:                         misc functions.
+* cl_isinarray:                          searching.
+* cl_isinwarray:                         searching.
+* CL_LIST:                               lists.
+* cl_list_t:                             lists.
+* CL_MALLOCED:                           variable definition.
+* CL_MAY_SAVE:                           variable definition.
+* cl_openconf:                           open and close.
+* CL_POSTENV:                            variable definition.
+* CL_POSTENV Limitation:                 limits.
+* CL_PREENV:                             variable definition.
+* CL_PREENV Limitation:                  limits.
+* CL_RANGE_REGEX:                        variable definition.
+* CL_RANGE_WILDCARD:                     variable definition.
+* cl_setvar:                             misc functions.
+* cl_ulist_t:                            unknown variables.
+* cl_unalias:                            misc functions.
+* CL_VAR_NOT_DONE:                       variable definition.
+* cl_var_t:                              variable definition.
+* CL_WARNING:                            variable definition.
+* cl_writeconf:                          reading and writing.
+* comments:                              comments.
+* configuration file handle:             configfile handle.
+* configuration files:                   configuration files.
+* configuration table:                   configuration table.
+* Conflib, programming:                  programming.
+* enum cl_var_typ:                       variable definition.
+* enumerations:                          enumerations.
+* Environtmentvariablen, Ersetzung:      $-Ersetzung.
+* Escapesequenzen:                       C-Escapesequenzen.
+* getpwnam:                              Standardroutinen.
+* getpwuid:                              Standardroutinen.
+* Heimatverzeichnis, Ersetzung:          ~-Ersetzung.
+* include:                               includes.
+* includes <1>:                          special constructs.
+* includes:                              includes.
+* includestanza:                         includes.
+* limits:                                limits.
+* lines:                                 lines.
+* lists:                                 lists.
+* Makros:                                Makros.
+* maximal array size:                    limits.
+* maximal input line length:             limits.
+* Overview:                              overview.
+* Programmierung, Interpretation:        Einbindung.
+* Programmierung, Textersetzung:         Einbindung.
+* programming with the library:          programming.
+* Standardroutinen:                      Standardroutinen.
+* stanza:                                stanzas.
+* stanza names:                          stanzas.
+* tip_ainterpret:                        tip_interpret.
+* tip_defmacro_intern:                   Makros.
+* tip_deinit:                            tip_init.
+* tip_fn_t:                              tip_fn_t.
+* tip_function:                          tip_fn_t.
+* tip_init:                              tip_init.
+* tip_interpret:                         tip_interpret.
+* tip_t:                                 tip_interpret.
+* todo:                                  todo.
+* unknown variables:                     unknown variables.
+* variable definition:                   variable definition.
+* variable name:                         variable definition.
+* Variables:                             variables.
+* varname:                               variable definition.
+* ~-Ersetzungen:                         ~-Ersetzung.
+
+

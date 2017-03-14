@@ -1,0 +1,12 @@
+@deftypefn {Function} {void} cl_clearconf cl_var_t *@var{tab}
+
+cl_clearconf walks through @var{tab} and 
+
+@itemize @bullet
+@item sets all numeric variables to 0.
+@item sets boolean variables to FALSE.
+@item frees all array contents.
+@item frees all dynamically allocted memory (the values of
+all variables and all lists which have the @code{CL_MALLOCED} flag set).
+@end itemize
+@end deftypefn

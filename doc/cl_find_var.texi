@@ -1,0 +1,6 @@
+@deftypefn {Function} {cl_var_t *} cl_find_confvar (cl_var_t *@var{tab}, const char *@var{name})
+
+This functions searches the array @var{tab} for the variable called
+@var{name} and returnes a pointer to the array element containing
+@var{name}, or @code{NULL} if @var{name} is not found. 
+@end deftypefn

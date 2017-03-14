@@ -1,0 +1,14 @@
+string=Ein String
+num=1000000000
+numshort=1000
+bool_false=false
+bool_true=true
+value-1=Eins
+value-5=Five
+alias=77
+space-list=ein test für spacelist
+multi-list=ein:test für multilist
+char=X
+tmpdir=/var/tmp2
+tmpdirP=/tmpX
+Ptmpdir=/var/tmp3

@@ -1,0 +1,101 @@
+
+check_conflib_var enum1 "value-1 = one" "" "" "value-1" "value-1=Eins" 
+check_conflib_var enum1 "value-1 = NEUN" "" "" "value-1" "value-1=Neun" 
+check_conflib_var enum1 "value-1 = NOPE" "" "" "value-1" "value-1=Null\nconflib: warning:*" 
+
+check_conflib_var bitfield1 "bitfield= bit0" "" "" "bitfield" "bitfield=bit0" 
+check_conflib_var bitfield2 "bitfield= bit0|bit2||bit7" "" "" "bitfield" "bitfield=bit0|bit2|bit7" 
+check_conflib_var bitfield3 "bitfield= bit0,bit2 bit7" "" "" "bitfield" "bitfield=bit0|bit2|bit7" 
+check_conflib_var bitfield4 "bitfield= bit0,bit2 bit7 NOPE" "" "" "bitfield" "bitfield=bit0|bit2|bit7\nconflib: warning*"
+check_conflib_var bitfield5 "bitfield= bit0\nbitfield=bit2" "" "" "bitfield" "bitfield=bit0|bit2" 
+check_conflib_var bitfield6 "bitfield= bit0\noverride bitfield=bit2" "" "" "bitfield" "bitfield=bit2" 
+check_conflib_var bitfield7 "bitfield= bit1,!bit1,bit0" "" "" "bitfield" "bitfield=bit0" 
+check_conflib_var bitfield8 "bitfield= bit0,!!bit1" "" "" "bitfield" "bitfield=bit0|bit1" 
+
+check_conflib_var string1 "string = TEST" "" "" "string" "string=TEST" 
+check_conflib_var string2 "string= TEST\nString=TEST2" "" "" "string" "string=TEST2" 
+check_conflib_var string3 "string  =  TEST  " "" "" "STRING" "string=TEST" 
+check_conflib_var string4 "string  =TEST\nappend string=again" "" "" "STRING" "string=TEST again" 
+
+check_conflib_var dirname1 "tmpdir = /tmp" "" "" "tmpdir" "tmpdir=/tmp/" 
+check_conflib_var dirname2 "tmpdir = /tmp/" "" "" "tmpdir" "tmpdir=/tmp/" 
+check_conflib_var dirname3 "tmpdir = " "" "" "tmpdir" "tmpdir=/" 
+check_conflib_var dirname4 "tmpdir = /var\nappend tmpdir=tmp" "" "" "tmpdir" "tmpdir=/var/tmp/" 
+
+check_conflib_var char1 "char = C" "" "" "char" "char=C" 
+check_conflib_var char2 "char = STR" "" "" "char" "char=S\nconflib: warning:*" 
+
+check_conflib_var num1 "num = 12" "" "" "num" "num=12" 
+check_conflib_var num2 "num = -12" "" "" "num" "num=-12" 
+check_conflib_var num3 "num = 0xff" "" "" "num" "num=255" 
+check_conflib_var num4 "num = 0xZffff" "" "" "num" "num=0" 
+
+check_conflib_var numshort1 "numshort = 0x2" "" "" "numshort" "numshort=2" 
+check_conflib_var numshort2 "numshort = 0xffffffff" "" "" "numshort" "numshort=0\nconflib: warning*" 
+
+check_conflib_var bool1 "bool_false = true" "" "" "bool_false" "bool_false=true" 
+check_conflib_var bool2 "bool_false = 1" "" "" "bool_false" "bool_false=true" 
+check_conflib_var bool2 "bool_false = 1" "" "" "bool_false" "bool_false=true" 
+
+check_conflib_var array "array = a1\narray=a2" "" "" "array" "array=a1\narray=a2" 
+
+check_conflib_var list1 "space-list = a b c" "" "" "space-list" "space-list=a b c" 
+check_conflib_var list2 "multi-list = a,b:c d\te" "" "" "multi-list" "multi-list=a:b:c:d:e" 
+check_conflib_var list3 "multi-list = ,,a,b:c d\te::" "" "" "multi-list" "multi-list=a:b:c:d:e" 
+check_conflib_var list4 "multi-list = ,,a,b:c\nmulti-list=d\te::" "" "" "multi-list" "multi-list=a:b:c:d:e" 
+check_conflib_var list5 "multi-list = ,,a,b:c\noverride multi-list=d\te::" "" "" "multi-list" "multi-list=d:e" 
+
+check_conflib_var alias1 "alias=12" "" "" "aliasziel" "aliasziel=12" 
+check_conflib_var alias2 "aliasziel=12" "" "" "aliasziel" "aliasziel=12" 
+check_conflib_var alias3 "alias=12" "" "" "alias" "aliasziel=12" 
+
+#
+# checks for a whole configuration file, no stanzas.
+#
+setenv TMP /tmp
+check_conflib global1 $srcdir/check1.cnf \"\" $srcdir/check1.out
+unsetenv TMP
+check_conflib global2 $srcdir/check1.cnf \"\" $srcdir/check1-unset.out
+setenv TMP /tmp
+check_conflib global3 $srcdir/check2.cnf \"\" $srcdir/check2.out
+unsetenv TMP
+check_conflib global4 $srcdir/check2.cnf \"\" $srcdir/check2-unset.out
+
+# continuation lines
+check_conflib global6 $srcdir/check4.cnf \"\" $srcdir/check4.out
+
+# checks for simple stanzas
+check_conflib_var stanza1 "  stanza1:  \nnum=77\n\\\[stanza2\\]  \nnum=78\nstanza3:\nnum=79\n" \
+	"stanza1" "" "num" "num=77"
+check_conflib_var stanza2 "  stanza1:  \nnum=77\n\\\[stanza2\\]  \nnum=78\nstanza3:\nnum=79\n" \
+	"stanza2" "" "num" "num=78"
+check_conflib_var stanza2 "  stanza1:  \nnum=77\n\\\[stanza2\\]  \nnum=78\nstanza3:\nnum=79\n" \
+	"stanza3" "" "num" "num=79"
+check_conflib_var stanza4 "  stanza1:  \nnum=77\n\\\[stanza2\\]\nincludestanza stanza3\nstanza3:\nnum=80\n" \
+	"stanza2" "" "num" "num=80"
+
+# check include
+exec echo "2beincluded:\nnum=91\n" >tmpinclude.cnf
+check_conflib_var include1 "  stanza1:  \nnum=77\n\\\[stanza2\\]  \ninclude tmpinclude.cnf 2beincluded\nstanza3:\nnum=79\n" \
+	"stanza2" "" "num" "num=91"
+exec echo "num=92\n" >tmpinclude.cnf
+check_conflib_var include2 "  stanza1:  \nnum=77\n\\\[stanza2\\]  \ninclude tmpinclude.cnf\nstanza3:\nnum=79\n" \
+	"stanza2" "" "num" "num=92"
+exec rm -f tmpinclude.cnf
+
+#
+# checks for a single stanza.
+#
+check_conflib stanza-colon $srcdir/stanza-colon.cnf \"stanza\" $srcdir/stanza-colon.out
+check_conflib stanza-bracket $srcdir/stanza-bracket.cnf \"stanza\" $srcdir/stanza-colon.out
+
+
+setenv TMP /tmp
+# don't you hate TCL, too?
+check_conflib_var interpret1 "tmpdir~=\\$\\\[\\\$TMP?\\\$TMP:/var/tmp\\]" "" "" tmpdir "tmpdir=/tmp/"
+check_conflib_var interpret2 "tmpdirP~=\\$(TMP)/X" "" "" tmpdirP "tmpdirP=/tmp/"
+check_conflib_var interpret3 "Ptmpdir~=\\$(TMP)" "" "" Ptmpdir "Ptmpdir=/tmp/"
+unsetenv TMP
+check_conflib_var interpret4 "tmpdir~=\\$\\\[\\\$TMP?\\\$TMP:/var/tmp\\]" "" "" tmpdir "tmpdir=/var/tmp/"
+check_conflib_var interpret5 "tmpdirP~=\\$(TMP)/X" "" "" tmpdirP "tmpdirP=/X/"
+check_conflib_var interpret6 "Ptmpdir~=\\$(TMP)" "" "" Ptmpdir "Ptmpdir=/"

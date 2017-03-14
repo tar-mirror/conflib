@@ -1,0 +1,22 @@
+@deftypefn {Function} {cl_file_t} cl_openconf (const char *@var{fname}, const char *@var{mode})
+
+Open the configuration file @var{fname} for reading 
+(@var{mode} == @code{r}) or writing (@var{mode} == @code{r}).
+The normal return value is the handle needed to access 
+@var{fname} with other @code{conflib}-functions.
+
+n the case of an error, a value of @code{NULL} is returned
+instead. In addition to the usual file open errors 
+(@pxref{Opening and Closing Files,opening a file descriptor,
+Opening and Closing Files,libc,The GNU C Library Reference Manual}), 
+the following @code{errno} error conditions are defined
+for this function:
+
+@table @code
+@item ENOMEM
+no more memory available.
+@item EINVAL
+@var{mode} is not equal to @code{r} or @code{w}.
+@end table
+
+@end deftypefn

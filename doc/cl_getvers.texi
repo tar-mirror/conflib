@@ -1,0 +1,5 @@
+@deftypefn {Function} {int} cl_getversion (void)
+
+cl_getversion returns an integer representing the version number of
+the library. It's @math{10000 * major + 100 * minor + patchlevel}.
+@end deftypefn
